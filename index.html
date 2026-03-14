@@ -1701,16 +1701,14 @@ function loadGame(){
   }catch(e){return false;}
 }
 
-function resetGame(){
+async function resetGame(){
   if(!confirm('Reset all data? Your progress will be permanently lost!'))return;
   const user=getCurrentUser();
-  if(user){
-    // Clear save from account too
+  if(user&&user.uid&&window._fbUser){
+    // Clear cloud save in Firestore
     try{
-      const accounts=getAccounts();
-      if(accounts[user.username]) accounts[user.username].save=null;
-      saveAccounts(accounts);
-    }catch(e){}
+      await fbSaveData(user.uid,window._fbUser.idToken,'{}');
+    }catch(e){console.warn('Cloud reset failed:',e);}
   }
   localStorage.removeItem(SAVE_KEY);
   location.reload();
