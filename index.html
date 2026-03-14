@@ -2329,7 +2329,30 @@ async function openAccountModal(){
       fbClearSession();
       setCurrentUser(null);
       localStorage.removeItem(SAVE_KEY);
+      // Reset game state to fresh
+      G.coins=30;G.totalCoins=0;G.prestigeLevel=0;G.prestigeBonus=0;
+      G.upgradeLevels={slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0};
+      G.prestigeUpgradeLevels={};
+      G.machines=[];G.bag=[];G.selectedItem=null;
+      G.totalRolls=0;G.legendaryCount=0;G.bestRarity=null;
+      G.lastDailyDate=null;G.dailyStreak=0;G.achievements={};
+      G.allTimeCoins=0;G.allTimeRolls=0;G.allTimeLegendary=0;G.allTimeMythical=0;G.allTimePrestige=0;
+      DICE_SHOP.forEach(d=>{G.shopStock[d.id]=d.maxStock;});
+      initShopStockRNG();
+      clearInterval(G.autorollTimer);
+      document.getElementById('btn-roll2').disabled=true;
+      document.getElementById('btn-roll3').disabled=true;
+      document.getElementById('btn-roll5').disabled=true;
+      document.getElementById('roll-icon').textContent='🎲';
+      document.getElementById('roll-name').textContent='Ready to roll!';
+      document.getElementById('roll-rarity-wrap').innerHTML='';
+      document.getElementById('stat-rolls').textContent='0';
+      document.getElementById('stat-best').textContent='—';
+      document.getElementById('stat-leg').textContent='0';
       updateAccountUI();
+      updateUI();
+      renderSlots();
+      switchTab('roll');
       showToast('Signed out. Progress saved to your account.');
     }
     return;
