@@ -1704,13 +1704,14 @@ function loadGame(){
 async function resetGame(){
   if(!confirm('Reset all data? Your progress will be permanently lost!'))return;
   const user=getCurrentUser();
-  if(user&&user.uid&&window._fbUser){
+  const fbUser=window._fbUser; // capture before clearing
+  // Clear cloud save FIRST before clearing session
+  if(fbUser&&fbUser.uid&&fbUser.idToken){
     try{
-      // Clear cloud save
-      await fbSaveData(user.uid,window._fbUser.idToken,JSON.stringify({_empty:true,savedAt:Date.now()}));
+      await fbSaveData(fbUser.uid,fbUser.idToken,JSON.stringify({_empty:true,savedAt:Date.now()}));
     }catch(e){console.warn('Cloud reset failed:',e);}
   }
-  // Clear ALL local data including session
+  // NOW clear everything
   localStorage.removeItem(SAVE_KEY);
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('factoryRNG_resetFlag');
