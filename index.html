@@ -1704,10 +1704,12 @@ function loadGame(){
 async function resetGame(){
   if(!confirm('Reset all data? Your progress will be permanently lost!'))return;
   const user=getCurrentUser();
+  // Set a flag so on reload we skip cloud load
+  localStorage.setItem('factoryRNG_resetFlag','1');
   if(user&&user.uid&&window._fbUser){
-    // Clear cloud save in Firestore
     try{
-      await fbSaveData(user.uid,window._fbUser.idToken,'{}');
+      // Overwrite cloud save with empty state
+      await fbSaveData(user.uid,window._fbUser.idToken,JSON.stringify({_reset:true,savedAt:Date.now()}));
     }catch(e){console.warn('Cloud reset failed:',e);}
   }
   localStorage.removeItem(SAVE_KEY);
@@ -2307,10 +2309,16 @@ async function saveCloudSave(uid,idToken){
 
 async function loadCloudSave(uid,idToken){
   if(!uid||!idToken)return;
+  // Skip if just reset
+  if(localStorage.getItem('factoryRNG_resetFlag')){
+    localStorage.removeItem('factoryRNG_resetFlag');
+    return;
+  }
   try{
     const raw=await fbLoadData(uid,idToken);
     if(raw){
       const data=typeof raw==='string'?JSON.parse(raw):raw;
+      if(!data||Object.keys(data).length===0||data._reset)return; // skip empty/reset state
       applyLoadedData(data);
       updateUIAfterLoad(data.savedAt);
       showToast('☁️ Cloud save loaded!',2500);
