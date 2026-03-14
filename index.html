@@ -2354,6 +2354,7 @@ async function openAccountModal(){
       renderSlots();
       switchTab('roll');
       showToast('Signed out. Progress saved to your account.');
+      setTimeout(()=>location.reload(), 1500);
     }
     return;
   }
