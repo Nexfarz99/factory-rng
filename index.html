@@ -1703,21 +1703,38 @@ function loadGame(){
 
 async function resetGame(){
   if(!confirm('Reset all data? Your progress will be permanently lost!'))return;
-  const user=getCurrentUser();
-  const fbUser=window._fbUser; // capture before clearing
-  // Clear cloud save FIRST before clearing session
+  const fbUser=window._fbUser;
+  // Clear cloud save first
   if(fbUser&&fbUser.uid&&fbUser.idToken){
     try{
       await fbSaveData(fbUser.uid,fbUser.idToken,JSON.stringify({_empty:true,savedAt:Date.now()}));
     }catch(e){console.warn('Cloud reset failed:',e);}
   }
-  // NOW clear everything
+  // Clear local save only, keep session
   localStorage.removeItem(SAVE_KEY);
-  localStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem('factoryRNG_resetFlag');
-  fbClearSession();
-  window._fbUser=null;
-  location.reload();
+  // Reset G state
+  G.coins=30;G.totalCoins=0;G.prestigeLevel=0;G.prestigeBonus=0;
+  G.upgradeLevels={slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0};
+  G.prestigeUpgradeLevels={};
+  G.machines=[];G.bag=[];G.selectedItem=null;
+  G.totalRolls=0;G.legendaryCount=0;G.bestRarity=null;
+  G.lastDailyDate=null;G.dailyStreak=0;G.achievements={};
+  G.allTimeCoins=0;G.allTimeRolls=0;G.allTimeLegendary=0;G.allTimeMythical=0;G.allTimePrestige=0;
+  DICE_SHOP.forEach(d=>{G.shopStock[d.id]=d.maxStock;});
+  initShopStockRNG();
+  clearInterval(G.autorollTimer);
+  // Reset UI
+  document.getElementById('btn-roll2').disabled=true;
+  document.getElementById('btn-roll3').disabled=true;
+  document.getElementById('btn-roll5').disabled=true;
+  document.getElementById('roll-icon').textContent='🎲';
+  document.getElementById('roll-name').textContent='Ready to roll!';
+  document.getElementById('roll-rarity-wrap').innerHTML='';
+  document.getElementById('stat-rolls').textContent='0';
+  document.getElementById('stat-best').textContent='—';
+  document.getElementById('stat-leg').textContent='0';
+  updateUI();renderSlots();switchTab('roll');
+  showToast('🔄 Data reset! Starting fresh.',2500);
 }
 
 function showSaveStatus(ok){
