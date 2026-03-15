@@ -222,6 +222,16 @@
   @keyframes mythFlash{0%{background:rgba(255,110,247,0)}20%{background:rgba(255,110,247,0.15)}100%{background:rgba(255,110,247,0)}}
   .leg-flash{animation:legFlash 1s ease forwards;}
   .myth-flash{animation:mythFlash 1.5s ease forwards;}
+
+  .fuse-slot{cursor:pointer;}
+  .fuse-slot-inner{background:var(--card);border:2px dashed rgba(255,110,247,0.25);border-radius:14px;padding:14px 8px;text-align:center;transition:all 0.2s;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .fuse-slot-inner:hover{border-color:rgba(255,110,247,0.5);background:rgba(255,110,247,0.05);}
+  .fuse-slot-inner.filled{border-style:solid;border-color:rgba(255,110,247,0.4);background:rgba(255,110,247,0.06);}
+  .fuse-slot-inner .fs-icon{font-size:26px;line-height:1;}
+  .fuse-slot-inner .fs-name{font-size:9px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text);margin-top:4px;line-height:1.3;}
+  .fuse-slot-inner .fs-rarity{font-size:9px;margin-top:3px;}
+  .fuse-slot-inner .fs-remove{font-size:10px;color:var(--red);margin-top:4px;cursor:pointer;font-weight:700;}
+
   ::-webkit-scrollbar{width:5px;height:5px;}
   ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
@@ -444,6 +454,7 @@ if(window._fbUser){fbRefreshToken(window._fbUser.refreshToken).then(d=>{window._
     <button class="tab-btn" onclick="switchTab('achievements')">🏅 Achievements</button>
     <button class="tab-btn" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
     <button class="tab-btn" onclick="switchTab('prestige')">⭐ Prestige</button>
+    <button class="tab-btn" onclick="switchTab('fuse')">🔮 Fuse</button>
     <button class="tab-btn" id="admin-tab-btn" onclick="openAdmin()" style="display:none;color:var(--red);">🛡️ Admin</button>
   </div>
   <div class="tab-scroll-hint" id="tab-scroll-hint">◀▶</div>
@@ -552,6 +563,60 @@ if(window._fbUser){fbRefreshToken(window._fbUser.refreshToken).then(d=>{window._
       <button class="btn-prestige" id="btn-prestige" onclick="doPrestige()">⭐ Prestige Now!</button>
     </div>
     <div class="prestige-history"><div class="prestige-history-title">Prestige History</div><div class="prestige-history-val" id="prestige-hist-val">Never prestiged.</div></div>
+  </div>
+  <div class="page" id="page-fuse">
+    <div id="fuse-locked-msg" style="display:none;text-align:center;padding:40px 16px">
+      <div style="font-size:48px;margin-bottom:12px">🔒</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;margin-bottom:8px">Fuse Machine Locked</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.8">Requires:<br>
+        <b style="color:var(--accent)">⭐ 5x Prestige</b> and <b style="color:var(--gold)">10,000,000 coins</b>
+      </div>
+      <div id="fuse-lock-progress" style="margin-top:14px;font-size:12px;color:var(--hint)"></div>
+    </div>
+    <div id="fuse-ui">
+      <div style="background:var(--card);border:1px solid rgba(255,110,247,0.25);border-radius:18px;padding:18px 16px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,110,247,0.12) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="font-size:36px;margin-bottom:6px">🔮</div>
+        <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;margin-bottom:4px">Fuse Machine</div>
+        <div style="font-size:12px;color:var(--muted)">Gabungkan 3 mesin dari bag menjadi mesin baru yang lebih kuat</div>
+      </div>
+
+      <div style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--hint);margin-bottom:10px">Pilih 3 Mesin dari Bag</div>
+
+      <div id="fuse-slots" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+        <div class="fuse-slot" id="fuse-slot-0" onclick="openFusePicker(0)" data-idx="0">
+          <div class="fuse-slot-inner empty">
+            <div style="font-size:22px;color:var(--hint)">+</div>
+            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pilih mesin</div>
+          </div>
+        </div>
+        <div class="fuse-slot" id="fuse-slot-1" onclick="openFusePicker(1)" data-idx="1">
+          <div class="fuse-slot-inner empty">
+            <div style="font-size:22px;color:var(--hint)">+</div>
+            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pilih mesin</div>
+          </div>
+        </div>
+        <div class="fuse-slot" id="fuse-slot-2" onclick="openFusePicker(2)" data-idx="2">
+          <div class="fuse-slot-inner empty">
+            <div style="font-size:22px;color:var(--hint)">+</div>
+            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pilih mesin</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="fuse-preview" style="display:none;background:var(--bg3);border:1px solid rgba(255,110,247,0.2);border-radius:14px;padding:13px 14px;margin-bottom:12px">
+        <div style="font-size:11px;color:var(--hint);margin-bottom:8px;font-family:'Nunito',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Kemungkinan Hasil</div>
+        <div id="fuse-preview-rows" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <button id="btn-fuse" onclick="doFuse()" disabled style="width:100%;padding:13px;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#701a75,#ff6ef7);color:#fff;border:none;border-radius:13px;cursor:pointer;opacity:0.35;transition:opacity 0.2s;">🔮 Fuse!</button>
+      <div style="font-size:11px;color:var(--hint);text-align:center;margin-top:8px">Pilih 3 mesin dari bag untuk mengaktifkan Fuse</div>
+
+      <div style="margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px">
+        <div style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--hint);margin-bottom:10px">Tabel Probabilitas Fuse</div>
+        <div id="fuse-prob-table" style="display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--muted)"></div>
+      </div>
+    </div>
   </div>
 </div>
 <div class="daily-overlay" id="daily-overlay" style="display:none">
@@ -736,9 +801,324 @@ async function renderLeaderboard(){
 function getPrestigeReq(){return Math.floor(10000*Math.pow(5,G.prestigeLevel));}
 function renderPrestige(){const req=getPrestigeReq();const can=G.totalCoins>=req;document.getElementById('btn-prestige').disabled=!can;document.getElementById('prestige-bonus-pill').textContent=`Bonus: +${Math.round(G.prestigeBonus*100)}% permanent income`;document.getElementById('prestige-req').innerHTML=can?`<span style="color:var(--green)">Requirements met! Ready to prestige.</span>`:`Need <span>${fmt(req)} coins</span> total • You: <span>${fmt(G.totalCoins)}</span>`;document.getElementById('prestige-hist-val').textContent=G.prestigeLevel===0?'Never prestiged.':`${G.prestigeLevel}x prestige • +${Math.round(G.prestigeBonus*100)}% income • Luck +${(G.prestigeLevel*0.25).toFixed(2)}x`;}
 function doPrestige(){const req=getPrestigeReq();if(G.totalCoins<req){showToast('Requirements not met!');return;}if(!confirm(`Prestige ${G.prestigeLevel+1}? All progress will be reset!`))return;G.prestigeLevel++;G.prestigeBonus=G.prestigeLevel*0.2;G.allTimePrestige++;G.coins=30+G.prestigeLevel*10;G.totalCoins=0;G.machines=[];G.bag=[];G.selectedItem=null;G.upgradeLevels={slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0};G.totalRolls=0;G.legendaryCount=0;G.bestRarity=null;DICE_SHOP.forEach(d=>{G.shopStock[d.id]=d.maxStock;});initShopStockRNG();clearInterval(G.autorollTimer);document.getElementById('roll-icon').textContent='🎲';document.getElementById('roll-name').textContent='Ready to roll!';document.getElementById('roll-rarity-wrap').innerHTML='';document.getElementById('stat-rolls').textContent='0';document.getElementById('stat-best').textContent='—';document.getElementById('stat-leg').textContent='0';document.getElementById('btn-roll2').disabled=true;document.getElementById('btn-roll3').disabled=true;document.getElementById('btn-roll5').disabled=!(G.prestigeUpgradeLevels['p_roll5']||0);checkAchievements();sfx('prestige');showToast(`⭐ Prestige ${G.prestigeLevel}! Bonus +${Math.round(G.prestigeBonus*100)}%`,3000);updateUI();renderPrestige();switchTab('roll');saveGame();showSaveStatus(true);}
-function switchTab(id){sfx('tab');const ids=['roll','inventory','generator','upgrade','shop','daily','achievements','leaderboard','prestige','admin'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===id));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');setTimeout(()=>{const activeBtn=document.querySelector('.tab-btn.active');const bar=document.getElementById('tabs-bar');if(activeBtn&&bar){const btnLeft=activeBtn.offsetLeft;const btnWidth=activeBtn.offsetWidth;const barWidth=bar.offsetWidth;bar.scrollTo({left:btnLeft-barWidth/2+btnWidth/2,behavior:'smooth'});}},50);if(id==='inventory')renderInventory();if(id==='daily')renderDailyPage();if(id==='achievements')renderAchievements();if(id==='generator')renderSlots();if(id==='upgrade')renderUpgrades();if(id==='shop')renderShop();if(id==='leaderboard')renderLeaderboard();if(id==='prestige')renderPrestige();}
+function switchTab(id){sfx('tab');const ids=['roll','inventory','generator','upgrade','shop','daily','achievements','leaderboard','prestige','fuse','admin'];document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===id));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');setTimeout(()=>{const activeBtn=document.querySelector('.tab-btn.active');const bar=document.getElementById('tabs-bar');if(activeBtn&&bar){const btnLeft=activeBtn.offsetLeft;const btnWidth=activeBtn.offsetWidth;const barWidth=bar.offsetWidth;bar.scrollTo({left:btnLeft-barWidth/2+btnWidth/2,behavior:'smooth'});}},50);if(id==='inventory')renderInventory();if(id==='daily')renderDailyPage();if(id==='achievements')renderAchievements();if(id==='generator')renderSlots();if(id==='upgrade')renderUpgrades();if(id==='shop')renderShop();if(id==='leaderboard')renderLeaderboard();if(id==='prestige')renderPrestige();if(id==='fuse')renderFusePage();}
 function renderRarityTable(){const luck=getLuck();const w=MACHINES.map(m=>({...m,w:m.chance*luck}));const total=w.reduce((a,m)=>a+m.w,0);const el=document.getElementById('rarity-table');const groups={};RARITY_ORDER.forEach(r=>{groups[r]=0;});w.forEach(m=>groups[m.rarity]+=m.w/total*100);el.innerHTML=RARITY_ORDER.map(r=>{const sp=SELL_PRICE[r];const col={common:'var(--common)',uncommon:'var(--uncommon)',rare:'var(--rare)',epic:'var(--epic)',legendary:'var(--gold)',mythical:'var(--mythical)'}[r];return`<div style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="rarity-badge rb-${r}" style="min-width:72px;text-align:center">${RARITY_LABEL[r]}</span><div style="flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:3px;background:${col};width:${Math.min(groups[r]*3,100)}%;border-radius:2px"></div></div><span style="color:var(--muted);min-width:40px;text-align:right">${groups[r].toFixed(2)}%</span><span style="color:var(--gold2);font-size:11px;min-width:58px;text-align:right">+${fmt(sp)} coins</span></div>`;}).join('');}
 function updateUI(){document.getElementById('coin-display').textContent=fmt(G.coins)+' coins';document.getElementById('income-pill').textContent='+'+getTotalIncome().toFixed(1)+'/sec';document.getElementById('prestige-pill').textContent='P'+G.prestigeLevel;const cnt=getBagCount();const cap=getBagCap();document.getElementById('bag-pill').textContent=`🎒 ${cnt}/${cap}`;const badge=document.getElementById('inv-badge');if(cnt>0){badge.textContent=cnt;badge.style.display='';}else badge.style.display='none';document.getElementById('bag-warning-roll').style.display=isBagFull()?'block':'none';const luck=getLuck().toFixed(1);const cd=(getCooldownMs()/1000).toFixed(1);document.getElementById('roll-cost-label').textContent=`1x: 10 | 2x: 18 | 3x: 24 | 5x: 38 coins | Luck: ${luck}x | CD: ${cd}s`;renderRarityTable();if(document.getElementById('page-shop').classList.contains('active'))renderShop();}
+
+/* ===== FUSE MACHINE SYSTEM ===== */
+const FUSE_REQ_PRESTIGE = 5;
+const FUSE_REQ_COINS = 10000000;
+
+// fusedSlots: array of 3 items, each null or {bagIndex, machine}
+let fuseSlots = [null, null, null];
+
+function isFuseUnlocked(){
+  return G.prestigeLevel >= FUSE_REQ_PRESTIGE && G.coins >= FUSE_REQ_COINS;
+}
+
+// Fuse probability table: key = sorted tiers string e.g. "1,1,1"
+// Returns array of {tier, prob} summing to 100
+function getFuseProbs(tiers){
+  // sort tiers ascending
+  const s = [...tiers].sort((a,b)=>a-b);
+  const key = s.join(',');
+  const T = {
+    '1,1,1': [{t:1,p:60},{t:2,p:40}],
+    '1,1,2': [{t:1,p:10},{t:2,p:70},{t:3,p:20}],
+    '1,1,3': [{t:2,p:20},{t:3,p:60},{t:4,p:20}],
+    '1,1,4': [{t:2,p:10},{t:3,p:30},{t:4,p:50},{t:5,p:10}],
+    '1,1,5': [{t:3,p:20},{t:4,p:50},{t:5,p:30}],
+    '1,1,6': [{t:3,p:10},{t:4,p:30},{t:5,p:40},{t:6,p:20}],
+    '1,2,2': [{t:2,p:15},{t:3,p:65},{t:4,p:20}],
+    '1,2,3': [{t:2,p:5},{t:3,p:55},{t:4,p:35},{t:5,p:5}],
+    '1,2,4': [{t:3,p:30},{t:4,p:50},{t:5,p:20}],
+    '1,2,5': [{t:3,p:15},{t:4,p:40},{t:5,p:40},{t:6,p:5}],
+    '1,2,6': [{t:4,p:25},{t:5,p:45},{t:6,p:30}],
+    '1,3,3': [{t:2,p:5},{t:3,p:45},{t:4,p:45},{t:5,p:5}],
+    '1,3,4': [{t:3,p:30},{t:4,p:50},{t:5,p:20}],
+    '1,3,5': [{t:3,p:10},{t:4,p:40},{t:5,p:45},{t:6,p:5}],
+    '1,3,6': [{t:4,p:20},{t:5,p:50},{t:6,p:30}],
+    '1,4,4': [{t:3,p:10},{t:4,p:45},{t:5,p:40},{t:6,p:5}],
+    '1,4,5': [{t:4,p:30},{t:5,p:50},{t:6,p:20}],
+    '1,4,6': [{t:4,p:15},{t:5,p:45},{t:6,p:40}],
+    '1,5,5': [{t:4,p:15},{t:5,p:45},{t:6,p:40}],
+    '1,5,6': [{t:4,p:5},{t:5,p:35},{t:6,p:60}],
+    '1,6,6': [{t:5,p:30},{t:6,p:70}],
+    '2,2,2': [{t:2,p:55},{t:3,p:45}],
+    '2,2,3': [{t:2,p:5},{t:3,p:65},{t:4,p:30}],
+    '2,2,4': [{t:3,p:35},{t:4,p:55},{t:5,p:10}],
+    '2,2,5': [{t:3,p:20},{t:4,p:50},{t:5,p:30}],
+    '2,2,6': [{t:3,p:10},{t:4,p:35},{t:5,p:40},{t:6,p:15}],
+    '2,3,3': [{t:3,p:50},{t:4,p:45},{t:5,p:5}],
+    '2,3,4': [{t:3,p:25},{t:4,p:55},{t:5,p:20}],
+    '2,3,5': [{t:3,p:10},{t:4,p:45},{t:5,p:40},{t:6,p:5}],
+    '2,3,6': [{t:4,p:30},{t:5,p:50},{t:6,p:20}],
+    '2,4,4': [{t:3,p:10},{t:4,p:50},{t:5,p:35},{t:6,p:5}],
+    '2,4,5': [{t:4,p:35},{t:5,p:50},{t:6,p:15}],
+    '2,4,6': [{t:4,p:15},{t:5,p:50},{t:6,p:35}],
+    '2,5,5': [{t:4,p:10},{t:5,p:50},{t:6,p:40}],
+    '2,5,6': [{t:4,p:5},{t:5,p:35},{t:6,p:60}],
+    '2,6,6': [{t:5,p:25},{t:6,p:75}],
+    '3,3,3': [{t:3,p:55},{t:4,p:45}],
+    '3,3,4': [{t:3,p:20},{t:4,p:60},{t:5,p:20}],
+    '3,3,5': [{t:3,p:10},{t:4,p:50},{t:5,p:40}],
+    '3,3,6': [{t:4,p:35},{t:5,p:45},{t:6,p:20}],
+    '3,4,4': [{t:4,p:55},{t:5,p:40},{t:6,p:5}],
+    '3,4,5': [{t:4,p:30},{t:5,p:55},{t:6,p:15}],
+    '3,4,6': [{t:4,p:15},{t:5,p:50},{t:6,p:35}],
+    '3,5,5': [{t:4,p:10},{t:5,p:50},{t:6,p:40}],
+    '3,5,6': [{t:5,p:40},{t:6,p:60}],
+    '3,6,6': [{t:5,p:20},{t:6,p:80}],
+    '4,4,4': [{t:4,p:55},{t:5,p:45}],
+    '4,4,5': [{t:4,p:20},{t:5,p:60},{t:6,p:20}],
+    '4,4,6': [{t:4,p:10},{t:5,p:50},{t:6,p:40}],
+    '4,5,5': [{t:5,p:60},{t:6,p:40}],
+    '4,5,6': [{t:5,p:35},{t:6,p:65}],
+    '4,6,6': [{t:5,p:20},{t:6,p:80}],
+    '5,5,5': [{t:5,p:50},{t:6,p:50}],
+    '5,5,6': [{t:5,p:25},{t:6,p:75}],
+    '5,6,6': [{t:6,p:100}],
+    '6,6,6': [{t:6,p:100}],
+  };
+  return T[key] || [{t:Math.min(s[2]+1,6),p:100}];
+}
+
+function tierToRarity(t){
+  return ['common','uncommon','rare','epic','legendary','mythical'][t-1]||'mythical';
+}
+function rarityToTier(r){
+  return {common:1,uncommon:2,rare:3,epic:4,legendary:5,mythical:6}[r]||1;
+}
+
+function rollFuseResult(probs){
+  let r = Math.random()*100;
+  for(const p of probs){r-=p.p;if(r<=0)return p.t;}
+  return probs[probs.length-1].t;
+}
+
+function getRandomMachineOfRarity(rarity){
+  const pool = MACHINES.filter(m=>m.rarity===rarity);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function renderFusePage(){
+  const locked = !isFuseUnlocked();
+  const lockedMsg = document.getElementById('fuse-locked-msg');
+  const fuseUI = document.getElementById('fuse-ui');
+  if(lockedMsg) lockedMsg.style.display = locked ? 'block' : 'none';
+  if(fuseUI) fuseUI.style.display = locked ? 'none' : 'block';
+  if(locked){
+    const prog = document.getElementById('fuse-lock-progress');
+    if(prog){
+      const pStr = G.prestigeLevel>=FUSE_REQ_PRESTIGE
+        ? '<span style="color:var(--green)">✓ Prestige terpenuhi</span>'
+        : `<span style="color:var(--red)">Prestige: ${G.prestigeLevel}/${FUSE_REQ_PRESTIGE}</span>`;
+      const cStr = G.coins>=FUSE_REQ_COINS
+        ? '<span style="color:var(--green)">✓ Koin terpenuhi</span>'
+        : `<span style="color:var(--red)">Koin: ${fmt(G.coins)} / ${fmt(FUSE_REQ_COINS)}</span>`;
+      prog.innerHTML = pStr + '<br>' + cStr;
+    }
+    return;
+  }
+  renderFuseSlots();
+  renderFuseProbTable();
+}
+
+function renderFuseSlots(){
+  for(let i=0;i<3;i++){
+    const slot = fuseSlots[i];
+    const el = document.getElementById('fuse-slot-'+i);
+    if(!el) continue;
+    if(!slot){
+      el.innerHTML = `<div class="fuse-slot-inner empty" onclick="openFusePicker(${i})">
+        <div style="font-size:22px;color:var(--hint)">+</div>
+        <div style="font-size:10px;color:var(--hint);margin-top:4px">Pilih mesin</div>
+      </div>`;
+    } else {
+      const m = slot.machine;
+      const rc = {common:'#94a3b8',uncommon:'#34d399',rare:'#60a5fa',epic:'#a78bfa',legendary:'#fbbf24',mythical:'#ff6ef7'}[m.rarity]||'#94a3b8';
+      el.innerHTML = `<div class="fuse-slot-inner filled" onclick="openFusePicker(${i})">
+        <div class="fs-icon">${m.icon}</div>
+        <div class="fs-name">${m.name}</div>
+        <div class="fs-rarity" style="color:${rc};font-size:9px;font-weight:800;font-family:'Nunito',sans-serif">${RARITY_LABEL[m.rarity]}</div>
+        <div class="fs-remove" onclick="removeFuseSlot(${i},event)">✕ Hapus</div>
+      </div>`;
+    }
+  }
+  updateFusePreview();
+}
+
+function removeFuseSlot(i, e){
+  e.stopPropagation();
+  fuseSlots[i] = null;
+  renderFuseSlots();
+}
+
+function updateFusePreview(){
+  const filled = fuseSlots.filter(s=>s!==null);
+  const btn = document.getElementById('btn-fuse');
+  const preview = document.getElementById('fuse-preview');
+  if(filled.length < 3){
+    if(btn){btn.disabled=true;btn.style.opacity='0.35';}
+    if(preview) preview.style.display='none';
+    return;
+  }
+  if(btn){btn.disabled=false;btn.style.opacity='1';}
+  // Compute probs
+  const tiers = fuseSlots.map(s=>rarityToTier(s.machine.rarity));
+  const probs = getFuseProbs(tiers);
+  if(preview) preview.style.display='block';
+  const rows = document.getElementById('fuse-preview-rows');
+  if(!rows) return;
+  const rarColor = {1:'#94a3b8',2:'#34d399',3:'#60a5fa',4:'#a78bfa',5:'#fbbf24',6:'#ff6ef7'};
+  const rarName = {1:'Common',2:'Uncommon',3:'Rare',4:'Epic',5:'Legendary',6:'Mythical'};
+  rows.innerHTML = probs.map(p=>`
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="display:inline-block;min-width:76px;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:800;font-family:'Nunito',sans-serif;color:${rarColor[p.t]};border:1px solid ${rarColor[p.t]}44;background:${rarColor[p.t]}18;text-align:center">${rarName[p.t]}</span>
+      <div style="flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden">
+        <div style="height:5px;background:${rarColor[p.t]};width:${p.p}%;border-radius:3px;transition:width 0.4s"></div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:${rarColor[p.t]};min-width:36px;text-align:right">${p.p}%</span>
+    </div>`).join('');
+}
+
+function renderFuseProbTable(){
+  const el = document.getElementById('fuse-prob-table');
+  if(!el) return;
+  const rarColor = {1:'#94a3b8',2:'#34d399',3:'#60a5fa',4:'#a78bfa',5:'#fbbf24',6:'#ff6ef7'};
+  const rarName = {1:'Common',2:'Uncommon',3:'Rare',4:'Epic',5:'Legendary',6:'Mythical'};
+  const examples = [
+    {label:'T1+T1+T1', tiers:[1,1,1]},
+    {label:'T1+T1+T2', tiers:[1,1,2]},
+    {label:'T2+T2+T2', tiers:[2,2,2]},
+    {label:'T2+T2+T3', tiers:[2,2,3]},
+    {label:'T3+T3+T3', tiers:[3,3,3]},
+    {label:'T3+T3+T4', tiers:[3,3,4]},
+    {label:'T4+T4+T4', tiers:[4,4,4]},
+    {label:'T4+T4+T5', tiers:[4,4,5]},
+    {label:'T5+T5+T5', tiers:[5,5,5]},
+    {label:'T5+T5+T6', tiers:[5,5,6]},
+    {label:'T6+T6+T6', tiers:[6,6,6]},
+  ];
+  el.innerHTML = examples.map(ex=>{
+    const probs = getFuseProbs(ex.tiers);
+    const probStr = probs.map(p=>`<span style="color:${rarColor[p.t]};font-weight:700">${rarName[p.t]} ${p.p}%</span>`).join(' · ');
+    return `<div style="padding:5px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text);font-weight:700">${ex.label}</span> → ${probStr}
+    </div>`;
+  }).join('');
+}
+
+function openFusePicker(slotIdx){
+  if(!isFuseUnlocked()){showToast('Fuse belum terbuka!');return;}
+  const old = document.getElementById('fuse-picker-modal');
+  if(old) old.remove();
+
+  // Get available machines in bag (exclude already picked in other slots)
+  const usedBagIndices = fuseSlots
+    .filter((s,i)=>s!==null && i!==slotIdx)
+    .map(s=>s.bagIndex);
+
+  // Group bag by name but track individual indices
+  const available = G.bag
+    .map((m,i)=>({m,i}))
+    .filter(({i})=>!usedBagIndices.includes(i));
+
+  if(!available.length){showToast('Bag kosong atau semua sudah dipilih!');return;}
+
+  const modal = document.createElement('div');
+  modal.id = 'fuse-picker-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:flex-end;justify-content:center;padding:0 0 20px;';
+  modal.onclick = e=>{if(e.target===modal)modal.remove();};
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#1e1c2e;border:1px solid rgba(255,110,247,0.25);border-radius:20px 20px 16px 16px;padding:16px;width:100%;max-width:700px;max-height:72vh;overflow-y:auto;';
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-family:Nunito,sans-serif;font-size:13px;font-weight:800;color:#8b88aa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;';
+  title.innerHTML = `Pilih Mesin untuk Slot ${slotIdx+1} <span onclick="document.getElementById('fuse-picker-modal').remove()" style="cursor:pointer;font-size:20px;color:#5a5775;line-height:1;">×</span>`;
+  panel.appendChild(title);
+
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:7px;';
+
+  // Sort by rarity desc
+  const sorted = [...available].sort((a,b)=>rarityToTier(b.m.rarity)-rarityToTier(a.m.rarity)||b.m.income-a.m.income);
+  const seen = new Set();
+  sorted.forEach(({m,i})=>{
+    // Show each unique name only once (use first available index)
+    if(seen.has(m.name+i)) return;
+    seen.add(m.name+i);
+    const rarColor = {common:'#94a3b8',uncommon:'#34d399',rare:'#60a5fa',epic:'#a78bfa',legendary:'#fbbf24',mythical:'#ff6ef7'}[m.rarity]||'#94a3b8';
+    const item = document.createElement('div');
+    item.style.cssText = 'background:#252338;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 7px 9px;text-align:center;cursor:pointer;transition:border-color 0.15s;';
+    item.innerHTML = `
+      <div style="font-size:22px;line-height:1">${m.icon}</div>
+      <div style="font-size:10px;font-weight:700;font-family:Nunito,sans-serif;color:#f0eeff;margin-top:4px;line-height:1.3">${m.name}</div>
+      <div style="font-size:9px;color:#34d399;margin-top:2px">+${m.income}/sec</div>
+      <div style="margin-top:4px;display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:800;font-family:Nunito,sans-serif;color:${rarColor};border:1px solid ${rarColor}44;background:${rarColor}18">${RARITY_LABEL[m.rarity]}</div>`;
+    item.onmouseover = ()=>item.style.borderColor='rgba(255,110,247,0.5)';
+    item.onmouseout = ()=>item.style.borderColor='rgba(255,255,255,0.1)';
+    item.onclick = ()=>{
+      fuseSlots[slotIdx] = {bagIndex:i, machine:{...m}};
+      modal.remove();
+      renderFuseSlots();
+    };
+    grid.appendChild(item);
+  });
+
+  panel.appendChild(grid);
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+}
+
+function doFuse(){
+  if(!isFuseUnlocked()){showToast('Fuse belum terbuka!');return;}
+  if(fuseSlots.some(s=>s===null)){showToast('Pilih 3 mesin terlebih dahulu!');return;}
+  if(isBagFull()){showToast('Bag penuh! Jual beberapa mesin dulu.');return;}
+
+  const tiers = fuseSlots.map(s=>rarityToTier(s.machine.rarity));
+  const probs = getFuseProbs(tiers);
+  const resultTier = rollFuseResult(probs);
+  const resultRarity = tierToRarity(resultTier);
+  const resultMachine = getRandomMachineOfRarity(resultRarity);
+  if(!resultMachine){showToast('Error: no machine found for tier!');return;}
+
+  // Remove fused machines from bag (remove by index, highest first to not shift)
+  const indices = fuseSlots.map(s=>s.bagIndex).sort((a,b)=>b-a);
+  indices.forEach(idx=>G.bag.splice(idx,1));
+
+  // Add result to bag
+  addToBag({...resultMachine});
+
+  // Reset slots
+  fuseSlots = [null,null,null];
+
+  // Effects
+  sfx(resultRarity==='mythical'?'mythical':resultRarity==='legendary'?'legendary':resultRarity==='epic'?'epic':'upgrade');
+  const rarColor = {common:'#94a3b8',uncommon:'#34d399',rare:'#60a5fa',epic:'#a78bfa',legendary:'#fbbf24',mythical:'#ff6ef7'}[resultRarity];
+  showToast(`🔮 Fuse berhasil! Dapat: ${resultMachine.icon} ${resultMachine.name} (${RARITY_LABEL[resultRarity]})`, 3500);
+
+  if(resultRarity==='legendary'||resultRarity==='mythical'){
+    G.legendaryCount++;
+    if(resultRarity==='mythical') G.allTimeMythical++;
+    else G.allTimeLegendary++;
+  }
+
+  renderFuseSlots();
+  renderFusePage();
+  updateUI();
+  saveGame();
+
+  // Flash effect on page
+  const page = document.getElementById('page-fuse');
+  if(page){
+    page.style.transition='background 0.3s';
+    page.style.background=resultRarity==='mythical'?'rgba(255,110,247,0.07)':resultRarity==='legendary'?'rgba(251,191,36,0.07)':'rgba(124,58,237,0.07)';
+    setTimeout(()=>page.style.background='',600);
+  }
+}
+
 const SAVE_KEY='factoryRNG_v1';
 
 
