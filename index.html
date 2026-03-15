@@ -223,6 +223,25 @@
   .leg-flash{animation:legFlash 1s ease forwards;}
   .myth-flash{animation:mythFlash 1.5s ease forwards;}
 
+
+  .ai-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;transition:border-color 0.2s;}
+  .ai-card:hover{border-color:var(--border2);}
+  .ai-card.active-ai{border-color:rgba(167,139,250,0.5);background:rgba(124,58,237,0.07);}
+  .ai-card.owned{border-color:rgba(52,211,153,0.35);}
+  .ai-req-row{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;}
+  .ai-req-pill{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;font-family:'Nunito',sans-serif;}
+  .ai-req-pill.ok{background:rgba(52,211,153,0.12);color:var(--green);border:1px solid rgba(52,211,153,0.25);}
+  .ai-req-pill.no{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2);}
+  /* Puzzle styles */
+  .puz-key{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:var(--bg3);border:2px solid var(--border2);font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;color:var(--text);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .puz-key:active,.puz-key.hit{background:var(--accent2);border-color:var(--accent);color:#fff;transform:scale(0.92);}
+  .puz-key.miss{background:rgba(248,113,113,0.2);border-color:var(--red);}
+  .cable-node{width:18px;height:18px;border-radius:50%;border:3px solid;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+  .cable-node.selected{transform:scale(1.3);box-shadow:0 0 10px currentColor;}
+  .timing-bar-track{height:40px;background:var(--bg3);border-radius:10px;overflow:hidden;position:relative;margin:10px 0;}
+  .timing-bar-zone{position:absolute;top:0;bottom:0;background:rgba(52,211,153,0.35);border:2px solid var(--green);border-radius:6px;}
+  .timing-bar-cursor{position:absolute;top:4px;bottom:4px;width:8px;background:#fff;border-radius:4px;transition:left 0.05s linear;}
+
   .fuse-slot{cursor:pointer;}
   .fuse-slot-inner{background:var(--card);border:2px dashed rgba(255,110,247,0.25);border-radius:14px;padding:14px 8px;text-align:center;transition:all 0.2s;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
   .fuse-slot-inner:hover{border-color:rgba(255,110,247,0.5);background:rgba(255,110,247,0.05);}
@@ -455,6 +474,7 @@ if(window._fbUser){fbRefreshToken(window._fbUser.refreshToken).then(d=>{window._
     <button class="tab-btn" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
     <button class="tab-btn" onclick="switchTab('prestige')">⭐ Prestige</button>
     <button class="tab-btn" onclick="switchTab('fuse')">🔮 Fuse</button>
+    <button class="tab-btn" onclick="switchTab('ai')">🤖 Make AI</button>
     <button class="tab-btn" id="admin-tab-btn" onclick="openAdmin()" style="display:none;color:var(--red);">🛡️ Admin</button>
   </div>
   <div class="tab-scroll-hint" id="tab-scroll-hint">◀▶</div>
@@ -564,6 +584,60 @@ if(window._fbUser){fbRefreshToken(window._fbUser.refreshToken).then(d=>{window._
     </div>
     <div class="prestige-history"><div class="prestige-history-title">Prestige History</div><div class="prestige-history-val" id="prestige-hist-val">Never prestiged.</div></div>
   </div>
+
+  <div class="page" id="page-ai">
+    <!-- Companion display -->
+    <div id="ai-companion-bar" style="display:none;background:var(--card);border:1px solid rgba(167,139,250,0.3);border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;">
+      <div id="ai-comp-icon" style="font-size:38px;line-height:1;"></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <div id="ai-comp-name" style="font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;"></div>
+          <span style="font-size:10px;background:rgba(167,139,250,0.15);color:var(--accent);border-radius:999px;padding:1px 8px;font-weight:700;font-family:'Nunito',sans-serif;">Active</span>
+        </div>
+        <div id="ai-comp-perks" style="font-size:11px;color:var(--muted);line-height:1.7;"></div>
+      </div>
+      <button onclick="dismissAI()" style="padding:5px 10px;border-radius:8px;border:1px solid rgba(248,113,113,0.3);background:transparent;color:var(--red);font-size:11px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;">Dismiss</button>
+    </div>
+
+    <!-- Materials -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:12px;">
+      <div style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--hint);margin-bottom:10px;">Your Materials</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:22px">🔧</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--common)" id="mat-basic">0</div>
+          <div style="font-size:10px;color:var(--hint);margin-top:2px">Basic Parts</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px">From Common rolls</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:22px">💾</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--epic)" id="mat-program">0</div>
+          <div style="font-size:10px;color:var(--hint);margin-top:2px">AI Program</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px">From Epic rolls</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:22px">💠</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--legendary)" id="mat-core">0</div>
+          <div style="font-size:10px;color:var(--hint);margin-top:2px">AI Core</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px">From Legendary rolls</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Cards -->
+    <div style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--hint);margin-bottom:10px;">Choose Your AI</div>
+    <div style="display:flex;flex-direction:column;gap:10px;" id="ai-cards"></div>
+  </div>
+
+  <!-- AI PUZZLE MODAL -->
+  <div id="ai-puzzle-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:800;display:none;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#1e1c2e;border:1px solid rgba(167,139,250,0.3);border-radius:20px;width:100%;max-width:480px;overflow:hidden;">
+      <!-- Progress bar -->
+      <div style="height:4px;background:var(--bg3);"><div id="puzzle-prog-fill" style="height:4px;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%;transition:width 0.4s;"></div></div>
+      <div style="padding:18px 20px 20px;" id="puzzle-content"></div>
+    </div>
+  </div>
+
   <div class="page" id="page-fuse">
     <div id="fuse-locked-msg" style="display:none;text-align:center;padding:40px 16px">
       <div style="font-size:48px;margin-bottom:12px">🔒</div>
@@ -578,42 +652,42 @@ if(window._fbUser){fbRefreshToken(window._fbUser.refreshToken).then(d=>{window._
         <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,110,247,0.12) 0%,transparent 70%);pointer-events:none;"></div>
         <div style="font-size:36px;margin-bottom:6px">🔮</div>
         <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;margin-bottom:4px">Fuse Machine</div>
-        <div style="font-size:12px;color:var(--muted)">Gabungkan 3 mesin dari bag menjadi mesin baru yang lebih kuat</div>
+        <div style="font-size:12px;color:var(--muted)">Combine 3 machines from your bag into a more powerful new machine</div>
       </div>
 
-      <div style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--hint);margin-bottom:10px">Pilih 3 Mesin dari Bag</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--hint);margin-bottom:10px">Select 3 Machines from Bag</div>
 
       <div id="fuse-slots" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
         <div class="fuse-slot" id="fuse-slot-0" onclick="openFusePicker(0)" data-idx="0">
           <div class="fuse-slot-inner empty">
             <div style="font-size:22px;color:var(--hint)">+</div>
-            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pilih mesin</div>
+            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pick machine</div>
           </div>
         </div>
         <div class="fuse-slot" id="fuse-slot-1" onclick="openFusePicker(1)" data-idx="1">
           <div class="fuse-slot-inner empty">
             <div style="font-size:22px;color:var(--hint)">+</div>
-            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pilih mesin</div>
+            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pick machine</div>
           </div>
         </div>
         <div class="fuse-slot" id="fuse-slot-2" onclick="openFusePicker(2)" data-idx="2">
           <div class="fuse-slot-inner empty">
             <div style="font-size:22px;color:var(--hint)">+</div>
-            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pilih mesin</div>
+            <div style="font-size:10px;color:var(--hint);margin-top:4px">Pick machine</div>
           </div>
         </div>
       </div>
 
       <div id="fuse-preview" style="display:none;background:var(--bg3);border:1px solid rgba(255,110,247,0.2);border-radius:14px;padding:13px 14px;margin-bottom:12px">
-        <div style="font-size:11px;color:var(--hint);margin-bottom:8px;font-family:'Nunito',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Kemungkinan Hasil</div>
+        <div style="font-size:11px;color:var(--hint);margin-bottom:8px;font-family:'Nunito',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Possible Outcome</div>
         <div id="fuse-preview-rows" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
 
       <button id="btn-fuse" onclick="doFuse()" disabled style="width:100%;padding:13px;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#701a75,#ff6ef7);color:#fff;border:none;border-radius:13px;cursor:pointer;opacity:0.35;transition:opacity 0.2s;">🔮 Fuse!</button>
-      <div style="font-size:11px;color:var(--hint);text-align:center;margin-top:8px">Pilih 3 mesin dari bag untuk mengaktifkan Fuse</div>
+      <div style="font-size:11px;color:var(--hint);text-align:center;margin-top:8px">Select 3 machines from your bag to activate Fuse</div>
 
       <div style="margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px">
-        <div style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--hint);margin-bottom:10px">Tabel Probabilitas Fuse</div>
+        <div style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--hint);margin-bottom:10px">Fuse Probability Table</div>
         <div id="fuse-prob-table" style="display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--muted)"></div>
       </div>
     </div>
@@ -664,18 +738,42 @@ if(window._fbUser){fbRefreshToken(window._fbUser.refreshToken).then(d=>{window._
 <div id="toast"></div>
 <div class="ach-notify" id="ach-notify"><div class="ach-notify-icon" id="an-icon">🏅</div><div class="ach-notify-text"><div class="ach-label">Achievement Unlocked!</div><div class="ach-name" id="an-name"></div><div class="ach-desc" id="an-desc"></div></div><div class="ach-notify-reward" id="an-reward"></div></div>
 <script>
-const MACHINES=[{name:'Small Generator',icon:'⚙️',rarity:'common',income:1,chance:45},{name:'Steam Pump',icon:'🔩',rarity:'common',income:2,chance:22},{name:'Mini Turbine',icon:'🔧',rarity:'uncommon',income:6,chance:13},{name:'Compressor',icon:'🏗️',rarity:'uncommon',income:10,chance:9},{name:'Small Reactor',icon:'⚡',rarity:'rare',income:25,chance:5.5},{name:'Auto Factory',icon:'🤖',rarity:'rare',income:45,chance:3},{name:'Mega Engine',icon:'🚀',rarity:'epic',income:100,chance:1.5},{name:'Quantum Factory',icon:'💎',rarity:'epic',income:200,chance:0.6},{name:'Hypercore',icon:'🌟',rarity:'legendary',income:750,chance:0.15},{name:'Cosmic Forge',icon:'🌌',rarity:'legendary',income:2000,chance:0.05},{name:'Void Reactor',icon:'🔮',rarity:'mythical',income:8000,chance:0.008},{name:'Singularity Core',icon:'🌀',rarity:'mythical',income:25000,chance:0.002},{name:'Omnifactory X',icon:'✨',rarity:'mythical',income:100000,chance:0.0004}];
-const SELL_PRICE={common:5,uncommon:15,rare:60,epic:250,legendary:1500,mythical:25000};
+const MACHINES=[{name:'Small Generator',icon:'⚙️',rarity:'common',income:1,chance:45},{name:'Steam Pump',icon:'🔩',rarity:'common',income:2,chance:22},{name:'Mini Turbine',icon:'🔧',rarity:'uncommon',income:6,chance:13},{name:'Compressor',icon:'🏗️',rarity:'uncommon',income:10,chance:9},{name:'Small Reactor',icon:'⚡',rarity:'rare',income:25,chance:5.5},{name:'Auto Factory',icon:'🤖',rarity:'rare',income:45,chance:3},{name:'Mega Engine',icon:'🚀',rarity:'epic',income:100,chance:1.5},{name:'Quantum Factory',icon:'💎',rarity:'epic',income:200,chance:0.6},{name:'Hypercore',icon:'🌟',rarity:'legendary',income:750,chance:0.15},{name:'Cosmic Forge',icon:'🌌',rarity:'legendary',income:2000,chance:0.05},{name:'Void Reactor',icon:'🔮',rarity:'mythical',income:8000,chance:0.008},{name:'Singularity Core',icon:'🌀',rarity:'mythical',income:25000,chance:0.002},{name:'Omnifactory X',icon:'✨',rarity:'mythical',income:100000,chance:0.0004},{name:'???',icon:'🤖',rarity:'secret',income:999999,chance:0,secret:true}];
+const SELL_PRICE={common:5,uncommon:15,rare:60,epic:250,legendary:1500,mythical:25000,secret:9999999};
 const RARITY_ORDER=['common','uncommon','rare','epic','legendary','mythical'];
-const RARITY_LABEL={common:'Common',uncommon:'Uncommon',rare:'Rare',epic:'Epic',legendary:'Legendary',mythical:'Mythical'};
-const RARITY_IDX={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythical:5};
+const RARITY_LABEL={common:'Common',uncommon:'Uncommon',rare:'Rare',epic:'Epic',legendary:'Legendary',mythical:'Mythical',secret:'???'};
+const RARITY_IDX={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythical:5,secret:6};
 const DICE_SHOP=[{id:'d_common',name:'Standard Die',icon:'🎲',desc:'Standard roll. No rarity guarantee.',color:'#94a3b8',minRarity:'common',price:8,maxStock:999,restockLabel:'∞',btnColor:'#4a4868',btnText:'Buy'},{id:'d_uncommon',name:'Green Die',icon:'🟢',desc:'Min. Uncommon guaranteed. No Common drops.',color:'#34d399',minRarity:'uncommon',price:40,maxStock:30,restockLabel:'30/day',btnColor:'#065f46',btnText:'Buy'},{id:'d_rare',name:'Blue Die',icon:'🔵',desc:'Min. Rare guaranteed. Great for grinding.',color:'#60a5fa',minRarity:'rare',price:150,maxStock:15,restockLabel:'15/day',btnColor:'#1e40af',btnText:'Buy'},{id:'d_epic',name:'Purple Die',icon:'🟣',desc:'Min. Epic guaranteed. Highly efficient!',color:'#a78bfa',minRarity:'epic',price:600,maxStock:8,restockLabel:'8/day',btnColor:'#4c1d95',btnText:'Buy'},{id:'d_legendary',name:'Golden Die',icon:'🟡',desc:'Min. Legendary guaranteed. Rare & expensive.',color:'#fbbf24',minRarity:'legendary',price:3000,maxStock:3,restockLabel:'3/day',btnColor:'#78350f',btnText:'Buy'},{id:'d_mythical',name:'Prismatic Die',icon:'🌈',desc:'Min. Mythical guaranteed. Extremely exclusive!',color:'#ff6ef7',minRarity:'mythical',price:25000,maxStock:1,restockLabel:'1/day',btnColor:'#701a75',btnText:'Buy'}];
 const UPGRADES=[{id:'slots',name:'Generator Slots',icon:'📦',bg:'rgba(52,211,153,0.15)',maxLv:6,baseCost:50,costMult:3.2,desc:'Add 1 generator machine slot',effect:lv=>`Active slots: ${3+lv}`},{id:'bag',name:'Bag Capacity',icon:'🎒',bg:'rgba(251,146,60,0.15)',maxLv:8,baseCost:25,costMult:2.4,desc:'Add 5 bag capacity',effect:lv=>`Capacity: ${10+lv*5} items`},{id:'luck',name:'RNG Luck',icon:'🍀',bg:'rgba(167,139,250,0.15)',maxLv:6,baseCost:80,costMult:2.8,desc:'Increase rare item chances',effect:lv=>`Luck: ${(1+lv*0.5).toFixed(1)}x`},{id:'speed',name:'Roll Speed',icon:'⚡',bg:'rgba(251,191,36,0.15)',maxLv:5,baseCost:65,costMult:3,desc:'Reduce roll cooldown',effect:lv=>{const cd=[3000,2200,1500,1000,700,400];return`CD: ${(cd[lv]/1000).toFixed(1)}s`;}},{id:'income',name:'Income Multiplier',icon:'💰',bg:'rgba(251,130,36,0.15)',maxLv:7,baseCost:120,costMult:3.5,desc:'Multiply all machine income',effect:lv=>{const m=[1,1.5,2.2,3.2,4.5,6.5,9,13];return`x${m[lv]} income`;}},{id:'roll2',name:'Roll 2x Upgrade',icon:'2️⃣',bg:'rgba(52,211,153,0.15)',maxLv:1,baseCost:2500,costMult:1,desc:'Unlock Roll 2x button (10% discount)',effect:lv=>lv===0?'Not active':'Active — 2x roll costs 18 coins'},{id:'roll3',name:'Roll 3x Upgrade',icon:'3️⃣',bg:'rgba(251,191,36,0.15)',maxLv:1,baseCost:8000,costMult:1,desc:'Unlock Roll 3x button (20% discount)',effect:lv=>lv===0?'Not active':'Active — 3x roll costs 24 coins'},{id:'autoroll',name:'Auto Roll',icon:'🔄',bg:'rgba(96,165,250,0.15)',maxLv:3,baseCost:500,costMult:5,desc:'Auto roll periodically',effect:lv=>lv===0?'Not active':`Every ${[0,8,4,2][lv]}sec`}];
 const PRESTIGE_UPGRADES=[{id:'p_slots2',name:'Mega Slots',icon:'🏗️',bg:'rgba(52,211,153,0.2)',maxLv:5,baseCost:80000,costMult:4,reqPrestige:1,desc:'Add 2 extra generator slots per level',effect:lv=>`Extra slots: +${lv*2}`,apply:()=>{}},{id:'p_luck2',name:'Fortune Boost',icon:'✨',bg:'rgba(167,139,250,0.2)',maxLv:5,baseCost:150000,costMult:4.5,reqPrestige:1,desc:'Further boost rare item luck',effect:lv=>`+${(lv*0.8).toFixed(1)}x extra luck`},{id:'p_income2',name:'Factory Overdrive',icon:'🔥',bg:'rgba(251,100,36,0.2)',maxLv:6,baseCost:250000,costMult:5,reqPrestige:2,desc:'Massive income multiplier on top of base',effect:lv=>{const m=[1,2,4,8,16,32,64];return`x${m[lv]} income bonus`;}},{id:'p_speed2',name:'Turbo Roll',icon:'💨',bg:'rgba(251,191,36,0.2)',maxLv:4,baseCost:200000,costMult:4.5,reqPrestige:2,desc:'Further reduce roll cooldown',effect:lv=>{const cd=[0,600,400,250,100];return lv===0?'Not active':`CD: ${(cd[lv]/1000).toFixed(1)}s`;}},{id:'p_bag2',name:'Infinite Pockets',icon:'🧳',bg:'rgba(251,146,60,0.2)',maxLv:6,baseCost:100000,costMult:3.8,reqPrestige:1,desc:'Add 10 bag capacity per level',effect:lv=>`+${lv*10} extra capacity`},{id:'p_autoroll2',name:'Machine Mind',icon:'🤖',bg:'rgba(96,165,250,0.2)',maxLv:3,baseCost:500000,costMult:6,reqPrestige:3,desc:'Auto roll multiple machines at once',effect:lv=>lv===0?'Not active':`Auto rolls ${[0,2,3,5][lv]}x at once`},{id:'p_roll5',name:'Roll 5x Upgrade',icon:'5️⃣',bg:'rgba(255,110,247,0.15)',maxLv:1,baseCost:750000,costMult:1,reqPrestige:3,desc:'Unlock Roll 5x button (25% discount)',effect:lv=>lv===0?'Not active':'Active — 5x roll costs 38 coins'},{id:'p_luck3',name:'Mythical Magnet',icon:'🌀',bg:'rgba(255,110,247,0.2)',maxLv:4,baseCost:2000000,costMult:6,reqPrestige:4,desc:'Greatly boosts mythical drop chance',effect:lv=>`+${(lv*2).toFixed(0)}x mythical luck`},{id:'p_income3',name:'Cosmic Engine',icon:'🌌',bg:'rgba(251,191,36,0.2)',maxLv:5,baseCost:5000000,costMult:7,reqPrestige:5,desc:'Exponential income boost for all machines',effect:lv=>{const m=[1,5,25,125,625,3125];return`x${m[lv]} cosmic multiplier`;}}];
 // No fake leaderboard — real players only
-let G={coins:30,totalCoins:0,prestigeLevel:0,prestigeBonus:0,upgradeLevels:{slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0},prestigeUpgradeLevels:{},machines:[],bag:[],totalRolls:0,legendaryCount:0,bestRarity:null,cooldown:false,autorollTimer:null,selectedItem:null,invFilter:'all',shopStock:{},lastDailyDate:null,dailyStreak:0,achievements:{},allTimeCoins:0,allTimeRolls:0,allTimeLegendary:0,allTimeMythical:0,allTimePrestige:0};
+let G={coins:30,totalCoins:0,prestigeLevel:0,prestigeBonus:0,upgradeLevels:{slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0},prestigeUpgradeLevels:{},machines:[],bag:[],totalRolls:0,legendaryCount:0,bestRarity:null,cooldown:false,autorollTimer:null,selectedItem:null,invFilter:'all',shopStock:{},lastDailyDate:null,dailyStreak:0,achievements:{},allTimeCoins:0,allTimeRolls:0,allTimeLegendary:0,allTimeMythical:0,allTimePrestige:0,matBasic:0,matProgram:0,matCore:0,activeAI:null,ownedAIs:[],aiAutoSellTimer:null,aiAutoPlaceTimer:null};
 function initShopStockRNG(){const RESTOCK_CONFIG_INIT={d_common:{minStock:5,maxStock:20,appearChance:1.0},d_uncommon:{minStock:0,maxStock:12,appearChance:0.85},d_rare:{minStock:0,maxStock:8,appearChance:0.75},d_epic:{minStock:0,maxStock:5,appearChance:0.60},d_legendary:{minStock:0,maxStock:3,appearChance:0.40},d_mythical:{minStock:0,maxStock:2,appearChance:0.15}};DICE_SHOP.forEach(d=>{const cfg=RESTOCK_CONFIG_INIT[d.id];if(!cfg){G.shopStock[d.id]=d.maxStock;return;}if(Math.random()>cfg.appearChance)G.shopStock[d.id]=0;else G.shopStock[d.id]=Math.floor(Math.random()*(cfg.maxStock-cfg.minStock+1))+cfg.minStock;});}
-function fmt(n){n=Math.floor(n);if(n>=1e9)return(n/1e9).toFixed(2)+'M';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toLocaleString('en-US');}
+function fmt(n){
+  n=Math.floor(n);
+  if(n>=1e63) return(n/1e63).toFixed(2)+'Vg';
+  if(n>=1e60) return(n/1e60).toFixed(2)+'Nv';
+  if(n>=1e57) return(n/1e57).toFixed(2)+'Ot';
+  if(n>=1e54) return(n/1e54).toFixed(2)+'St';
+  if(n>=1e51) return(n/1e51).toFixed(2)+'Qi';
+  if(n>=1e48) return(n/1e48).toFixed(2)+'Qa';
+  if(n>=1e45) return(n/1e45).toFixed(2)+'Qd';
+  if(n>=1e42) return(n/1e42).toFixed(2)+'Td';
+  if(n>=1e39) return(n/1e39).toFixed(2)+'Dd';
+  if(n>=1e36) return(n/1e36).toFixed(2)+'Ud';
+  if(n>=1e33) return(n/1e33).toFixed(2)+'Dc';
+  if(n>=1e30) return(n/1e30).toFixed(2)+'No';
+  if(n>=1e27) return(n/1e27).toFixed(2)+'Oc';
+  if(n>=1e24) return(n/1e24).toFixed(2)+'Sp';
+  if(n>=1e21) return(n/1e21).toFixed(2)+'Sx';
+  if(n>=1e18) return(n/1e18).toFixed(2)+'Qi';
+  if(n>=1e15) return(n/1e15).toFixed(2)+'Qd';
+  if(n>=1e12) return(n/1e12).toFixed(2)+'T';
+  if(n>=1e9)  return(n/1e9).toFixed(2)+'B';
+  if(n>=1e6)  return(n/1e6).toFixed(2)+'M';
+  if(n>=1e3)  return(n/1e3).toFixed(1)+'K';
+  return n.toLocaleString('en-US');
+}
 function showToast(msg,dur=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),dur);}
 function getBagCap(){const pBag=G.prestigeUpgradeLevels['p_bag2']||0;return 10+G.upgradeLevels.bag*5+pBag*10;}
 function getBagCount(){return G.bag.length;}
@@ -683,20 +781,27 @@ function isBagFull(){return getBagCount()>=getBagCap();}
 function getSellPrice(m){return SELL_PRICE[m.rarity]||5;}
 function getLuck(){const pL2=(G.prestigeUpgradeLevels['p_luck2']||0)*0.8;const pL3=(G.prestigeUpgradeLevels['p_luck3']||0)*2;return 1+G.upgradeLevels.luck*0.5+G.prestigeLevel*0.25+pL2+pL3;}
 function getCooldownMs(){const c=[3000,2200,1500,1000,700,400];let cd=c[Math.min(G.upgradeLevels.speed,c.length-1)];const turboLv=Math.min(G.prestigeUpgradeLevels['p_speed2']||0,4);const turbo=[0,600,400,250,100][turboLv];if(turbo>0)cd=Math.min(cd,turbo);return cd;}
-function getIncomeMult(){const base=[1,1.5,2.2,3.2,4.5,6.5,9,13][Math.min(G.upgradeLevels.income,7)];const od=[1,2,4,8,16,32,64][Math.min(G.prestigeUpgradeLevels['p_income2']||0,6)];const cosmic=[1,5,25,125,625,3125][Math.min(G.prestigeUpgradeLevels['p_income3']||0,5)];return base*od*cosmic*(1+G.prestigeBonus);}
+function getIncomeMult(){const base=[1,1.5,2.2,3.2,4.5,6.5,9,13][Math.min(G.upgradeLevels.income,7)];const od=[1,2,4,8,16,32,64][Math.min(G.prestigeUpgradeLevels['p_income2']||0,6)];const cosmic=[1,5,25,125,625,3125][Math.min(G.prestigeUpgradeLevels['p_income3']||0,5)];const aiBoost=G.activeAI==='gmini'?2:G.activeAI==='talkgpt'?1.5:G.activeAI==='dexter'?3:1;return base*od*cosmic*(1+G.prestigeBonus)*aiBoost;}
 function getTotalSlots(){const pSlots=(G.prestigeUpgradeLevels['p_slots2']||0)*2;return 3+G.upgradeLevels.slots+pSlots;}
 function getTotalIncome(){return G.machines.reduce((a,m)=>a+(m?m.income*getIncomeMult():0),0);}
 function rarityIdx(r){return RARITY_IDX[r]??0;}
-function rollMachineWithMinRarity(minRarity='common'){const minIdx=rarityIdx(minRarity);const luck=getLuck();const pool=MACHINES.filter(m=>rarityIdx(m.rarity)>=minIdx);const w=pool.map(m=>({...m,w:m.chance*luck}));const total=w.reduce((a,m)=>a+m.w,0);let r=Math.random()*total;for(const m of w){r-=m.w;if(r<=0)return m;}return w[w.length-1];}
+function rollMachineWithMinRarity(minRarity='common'){const minIdx=rarityIdx(minRarity);const luck=getLuck();const pool=MACHINES.filter(m=>rarityIdx(m.rarity)>=minIdx&&!m.secret);const w=pool.map(m=>({...m,w:m.chance*luck}));const total=w.reduce((a,m)=>a+m.w,0);let r=Math.random()*total;for(const m of w){r-=m.w;if(r<=0)return m;}return w[w.length-1];}
 function addToBag(m){if(isBagFull())return false;G.bag.push({...m});return true;}
-function triggerRollResult(m){document.getElementById('roll-icon').textContent=m.icon;document.getElementById('roll-name').textContent=m.name;document.getElementById('roll-rarity-wrap').innerHTML=`<span class="rarity-badge rb-${m.rarity}">${RARITY_LABEL[m.rarity]}</span>`;const icon=document.getElementById('roll-icon');icon.classList.remove('pop');void icon.offsetWidth;icon.classList.add('pop');setTimeout(()=>icon.classList.remove('pop'),400);setTimeout(()=>sfx(m.rarity==='mythical'?'mythical':m.rarity==='legendary'?'legendary':m.rarity==='epic'?'epic':m.rarity==='rare'?'rare':m.rarity==='uncommon'?'uncommon':'common'),180);if(m.rarity==='legendary'){G.legendaryCount++;G.allTimeLegendary++;showToast('✨ LEGENDARY! '+m.name,3000);const card=document.getElementById('roll-main-card');card.classList.add('leg-flash');setTimeout(()=>card.classList.remove('leg-flash'),1000);}if(m.rarity==='mythical'){G.legendaryCount++;G.allTimeMythical++;showToast('🌀 MYTHICAL!!! '+m.name+' — INCREDIBLE!',4000);const card=document.getElementById('roll-main-card');card.classList.add('myth-flash');setTimeout(()=>card.classList.remove('myth-flash'),1500);}if(!G.bestRarity||rarityIdx(m.rarity)>rarityIdx(G.bestRarity))G.bestRarity=m.rarity;document.getElementById('stat-rolls').textContent=G.totalRolls;document.getElementById('stat-best').textContent=G.bestRarity?RARITY_LABEL[G.bestRarity]:'—';document.getElementById('stat-leg').textContent=G.legendaryCount;}
+function triggerRollResult(m){document.getElementById('roll-icon').textContent=m.icon;document.getElementById('roll-name').textContent=m.name;document.getElementById('roll-rarity-wrap').innerHTML=`<span class="rarity-badge rb-${m.rarity}">${RARITY_LABEL[m.rarity]}</span>`;const icon=document.getElementById('roll-icon');icon.classList.remove('pop');void icon.offsetWidth;icon.classList.add('pop');setTimeout(()=>icon.classList.remove('pop'),400);setTimeout(()=>sfx(m.rarity==='mythical'?'mythical':m.rarity==='legendary'?'legendary':m.rarity==='epic'?'epic':m.rarity==='rare'?'rare':m.rarity==='uncommon'?'uncommon':'common'),180);if(m.rarity==='legendary'){G.legendaryCount++;G.allTimeLegendary++;showToast('✨ LEGENDARY! '+m.name,3000);const card=document.getElementById('roll-main-card');card.classList.add('leg-flash');setTimeout(()=>card.classList.remove('leg-flash'),1000);}if(m.rarity==='mythical'){G.legendaryCount++;G.allTimeMythical++;showToast('🌀 MYTHICAL!!! '+m.name+' — INCREDIBLE!',4000);const card=document.getElementById('roll-main-card');card.classList.add('myth-flash');setTimeout(()=>card.classList.remove('myth-flash'),1500);}if(!G.bestRarity||rarityIdx(m.rarity)>rarityIdx(G.bestRarity))G.bestRarity=m.rarity;document.getElementById('stat-rolls').textContent=G.totalRolls;document.getElementById('stat-best').textContent=G.bestRarity?RARITY_LABEL[G.bestRarity]:'—';document.getElementById('stat-leg').textContent=G.legendaryCount;
+// Drop AI materials based on rarity
+if(!m.secret){
+  if(m.rarity==='common'&&Math.random()<0.4){G.matBasic++;updateAIMatsUI();}
+  else if(m.rarity==='uncommon'&&Math.random()<0.2){G.matBasic++;updateAIMatsUI();}
+  else if(m.rarity==='epic'&&Math.random()<0.7){G.matProgram++;updateAIMatsUI();}
+  else if(m.rarity==='legendary'&&Math.random()<0.8){G.matCore++;updateAIMatsUI();}
+}}
 function startCooldown(){G.cooldown=true;document.getElementById('btn-roll').disabled=true;document.getElementById('btn-roll2').disabled=true;document.getElementById('btn-roll3').disabled=true;document.getElementById('btn-roll5').disabled=!(G.prestigeUpgradeLevels['p_roll5']||0);const cd=getCooldownMs();const fill=document.getElementById('cd-fill');fill.style.transition='none';fill.style.width='100%';requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.transition=`width ${cd}ms linear`;fill.style.width='0%';}));setTimeout(()=>{G.cooldown=false;document.getElementById('btn-roll').disabled=false;document.getElementById('btn-roll2').disabled=!G.upgradeLevels.roll2;document.getElementById('btn-roll3').disabled=!G.upgradeLevels.roll3;fill.style.transition='none';fill.style.width='100%';},cd);}
 function doRollN(n,minRarity='common',auto=false){if(G.cooldown)return;const costs=[0,10,18,24,0,38];const cost=costs[n];const freeSlots=getBagCap()-getBagCount();if(freeSlots<n){if(!auto)showToast(`Bag needs ${n} free slots. Currently: ${freeSlots}.`);return;}if(G.coins<cost){if(!auto){sfx('error');showToast('Not enough coins!');}return;}if(n===2&&!G.upgradeLevels.roll2){showToast('Unlock Roll 2x Upgrade first!');return;}if(n===3&&!G.upgradeLevels.roll3){showToast('Unlock Roll 3x Upgrade first!');return;}if(n===5&&!(G.prestigeUpgradeLevels['p_roll5']||0)){showToast('Unlock Roll 5x Upgrade first!');return;}G.coins-=cost;G.totalRolls+=n;G.allTimeRolls+=n;sfx("roll");let lastM=null;for(let i=0;i<n;i++){const m=rollMachineWithMinRarity(minRarity);addToBag(m);lastM=m;}triggerRollResult(lastM);checkAchievements();startCooldown();updateUI();if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();}
 function setFilter(f,btn){G.invFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');G.selectedItem=null;renderInventory();}
 function getGroupedBag(){const groups={};G.bag.forEach(m=>{if(!groups[m.name])groups[m.name]={machine:{...m},count:0};groups[m.name].count++;});return Object.values(groups);}
-function renderInventory(){const grid=document.getElementById('inv-grid');const empty=document.getElementById('inv-empty');const cap=getBagCap();const cnt=getBagCount();const pct=Math.min(cnt/cap*100,100);document.getElementById('inv-count-label').textContent=`${cnt} / ${cap} item`;const bar=document.getElementById('inv-bag-bar');bar.style.width=pct+'%';bar.className='inv-bag-bar'+(cnt>=cap?' full':'');const groups=getGroupedBag().filter(g=>G.invFilter==='all'||g.machine.rarity===G.invFilter);grid.innerHTML='';if(groups.length===0){empty.style.display='block';grid.style.display='none';document.getElementById('item-detail-panel').classList.remove('visible');return;}empty.style.display='none';grid.style.display='grid';groups.forEach(g=>{const m=g.machine;const isSel=G.selectedItem===m.name;const div=document.createElement('div');let cls='inv-item'+(isSel?' selected':'');if(m.rarity==='legendary')cls+=' leg-glow';if(m.rarity==='mythical')cls+=' myth-glow';div.className=cls;div.innerHTML=`${g.count>1?`<div class="item-qty">x${g.count}</div>`:''}  <div class="item-icon">${m.icon}</div><div class="item-name">${m.name}</div><div class="item-income">+${m.income}/sec</div><div class="item-rarity"><span class="rarity-badge rb-${m.rarity}" style="font-size:9px;padding:2px 8px;margin-top:0">${RARITY_LABEL[m.rarity]}</span></div>`;div.onclick=()=>selectInvItem(m.name);grid.appendChild(div);});renderDetailPanel();}
+function renderInventory(){const grid=document.getElementById('inv-grid');const empty=document.getElementById('inv-empty');const cap=getBagCap();const cnt=getBagCount();const pct=Math.min(cnt/cap*100,100);document.getElementById('inv-count-label').textContent=`${cnt} / ${cap} item`;const bar=document.getElementById('inv-bag-bar');bar.style.width=pct+'%';bar.className='inv-bag-bar'+(cnt>=cap?' full':'');const groups=getGroupedBag().filter(g=>G.invFilter==='all'||g.machine.rarity===G.invFilter);grid.innerHTML='';if(groups.length===0){empty.style.display='block';grid.style.display='none';document.getElementById('item-detail-panel').classList.remove('visible');return;}empty.style.display='none';grid.style.display='grid';groups.forEach(g=>{const m=g.machine;const isSel=G.selectedItem===m.name;const div=document.createElement('div');let cls='inv-item'+(isSel?' selected':'');if(m.rarity==='legendary')cls+=' leg-glow';if(m.rarity==='mythical')cls+=' myth-glow';div.className=cls;const secretM=m.secret;div.innerHTML=`${g.count>1?`<div class="item-qty">x${g.count}</div>`:''}  <div class="item-icon">${secretM?'🤖':m.icon}</div><div class="item-name">${secretM?'???':m.name}</div><div class="item-income">${secretM?'? ? ?':'+'+m.income+'/sec'}</div><div class="item-rarity"><span class="rarity-badge" style="font-size:9px;padding:2px 8px;margin-top:0;${secretM?'background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.3)':('background:var(--rb-'+m.rarity+'-bg,rgba(148,163,184,0.15));color:var(--'+m.rarity+',#94a3b8)')+''}">${RARITY_LABEL[m.rarity]}</span></div>`;div.onclick=()=>selectInvItem(m.name);grid.appendChild(div);});renderDetailPanel();}
 function selectInvItem(name){G.selectedItem=G.selectedItem===name?null:name;renderInventory();}
-function renderDetailPanel(){const panel=document.getElementById('item-detail-panel');if(!G.selectedItem){panel.classList.remove('visible');return;}const group=getGroupedBag().find(g=>g.machine.name===G.selectedItem);if(!group){panel.classList.remove('visible');G.selectedItem=null;return;}const m=group.machine;const sp=getSellPrice(m);const slots=getTotalSlots();let hasSlot=false;for(let i=0;i<slots;i++){if(!G.machines[i]){hasSlot=true;break;}}panel.classList.add('visible');document.getElementById('detail-icon').textContent=m.icon;document.getElementById('detail-name').textContent=m.name;document.getElementById('detail-sub').innerHTML=`<span class="rarity-badge rb-${m.rarity}" style="margin-top:0">${RARITY_LABEL[m.rarity]}</span> &nbsp; Income: +${(m.income*getIncomeMult()).toFixed(1)}/sec &nbsp;•&nbsp; ${group.count} in bag<br><span class="sell-price-tag">Sell price: ${fmt(sp)} coins/item</span>`;const pb=document.getElementById('detail-place-btn');pb.disabled=!hasSlot;pb.textContent=hasSlot?'Place in Generator':'Slots Full';document.getElementById('detail-sell-btn').textContent=`Sell 1 (+${fmt(sp)})`;document.getElementById('detail-sell-all-btn').textContent=`Sell All x${group.count} (+${fmt(sp*group.count)})`;}
+function renderDetailPanel(){const panel=document.getElementById('item-detail-panel');if(!G.selectedItem){panel.classList.remove('visible');return;}const group=getGroupedBag().find(g=>g.machine.name===G.selectedItem);if(!group){panel.classList.remove('visible');G.selectedItem=null;return;}const m=group.machine;const sp=getSellPrice(m);const slots=getTotalSlots();let hasSlot=false;for(let i=0;i<slots;i++){if(!G.machines[i]){hasSlot=true;break;}}panel.classList.add('visible');document.getElementById('detail-icon').textContent=m.secret?'🤖':m.icon;document.getElementById('detail-name').textContent=m.secret?'???':m.name;document.getElementById('detail-sub').innerHTML=m.secret?`<span class="rarity-badge" style="margin-top:0;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.3)">? ? ?</span> &nbsp; Income: ??? &nbsp;•&nbsp; ${group.count} in bag<br><span class="sell-price-tag">Sell price: ???</span>`:`<span class="rarity-badge rb-${m.rarity}" style="margin-top:0">${RARITY_LABEL[m.rarity]}</span> &nbsp; Income: +${(m.income*getIncomeMult()).toFixed(1)}/sec &nbsp;•&nbsp; ${group.count} in bag<br><span class="sell-price-tag">Sell price: ${fmt(sp)} coins/item</span>`;const pb=document.getElementById('detail-place-btn');pb.disabled=!hasSlot;pb.textContent=hasSlot?'Place in Generator':'Slots Full';document.getElementById('detail-sell-btn').textContent=m.secret?'Sell 1 (+???)': `Sell 1 (+${fmt(sp)})`;document.getElementById('detail-sell-all-btn').textContent=m.secret?`Sell All x${group.count} (+???)`:`Sell All x${group.count} (+${fmt(sp*group.count)})`;}
 function placeSelectedFromDetail(){if(!G.selectedItem)return;const idx=G.bag.findIndex(m=>m.name===G.selectedItem);if(idx===-1)return;const m=G.bag[idx];const slots=getTotalSlots();let si=-1;for(let i=0;i<slots;i++){if(!G.machines[i]){si=i;break;}}if(si===-1){showToast('No empty slots!');return;}G.bag.splice(idx,1);G.machines[si]={...m};sfx('place');showToast(m.name+' placed in slot '+(si+1)+'!');if(!G.bag.find(x=>x.name===G.selectedItem))G.selectedItem=null;renderInventory();updateUI();renderSlots();}
 function sellSelectedOne(){if(!G.selectedItem)return;const idx=G.bag.findIndex(m=>m.name===G.selectedItem);if(idx===-1)return;const m=G.bag[idx];const sp=getSellPrice(m);G.bag.splice(idx,1);G.coins+=sp;G.totalCoins+=sp;sfx('sell');showToast(`+${fmt(sp)} coins from ${m.name}`);if(!G.bag.find(x=>x.name===G.selectedItem))G.selectedItem=null;renderInventory();updateUI();}
 function sellSelectedAll(){if(!G.selectedItem)return;const items=G.bag.filter(m=>m.name===G.selectedItem);if(!items.length)return;const sp=getSellPrice(items[0]);const total=sp*items.length;G.bag=G.bag.filter(m=>m.name!==G.selectedItem);G.coins+=total;G.totalCoins+=total;sfx('sell');showToast(`+${fmt(total)} coins from ${items.length}x ${G.selectedItem}`);G.selectedItem=null;renderInventory();updateUI();}
@@ -704,7 +809,7 @@ function sellAllRarity(rarity){const items=G.bag.filter(m=>m.rarity===rarity);if
 function sellAllFromBag(){if(!G.bag.length){showToast('Bag is already empty!');return;}let total=0;const cnt=G.bag.length;G.bag.forEach(m=>total+=getSellPrice(m));G.bag=[];G.coins+=total;G.totalCoins+=total;G.selectedItem=null;sfx('sell');showToast(`+${fmt(total)} coins from ${cnt} item`);renderInventory();updateUI();}
 function placeBestInAll(){const slots=getTotalSlots();let placed=0;for(let si=0;si<slots;si++){if(G.machines[si])continue;if(!G.bag.length)break;let bestIdx=-1,bestRarityScore=-1;G.bag.forEach((m,i)=>{const score=rarityIdx(m.rarity)*100000+m.income;if(score>bestRarityScore){bestRarityScore=score;bestIdx=i;}});if(bestIdx===-1)break;G.machines[si]={...G.bag[bestIdx]};G.bag.splice(bestIdx,1);placed++;}if(placed===0){showToast('No empty slots or bag is empty!');return;}sfx('place');showToast(`${placed} best machines placed in generator!`);if(G.selectedItem&&!G.bag.find(m=>m.name===G.selectedItem))G.selectedItem=null;renderSlots();updateUI();if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();}
 function takeAllFromGen(){const slots=getTotalSlots();let taken=0,skipped=0;for(let i=0;i<slots;i++){if(!G.machines[i])continue;if(isBagFull()){skipped++;continue;}G.bag.push({...G.machines[i]});G.machines[i]=null;taken++;}if(taken===0&&skipped===0){showToast('Generator is already empty!');return;}let msg=`${taken} machine(s) moved to bag.`;if(skipped>0)msg+=` ${skipped} skipped (bag full).`;showToast(msg);renderSlots();updateUI();if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();}
-function renderSlots(){const grid=document.getElementById('slots-grid');grid.innerHTML='';const total=getTotalSlots();for(let i=0;i<total+2;i++){const m=G.machines[i];const unlocked=i<total;const card=document.createElement('div');if(!unlocked){card.className='slot-card locked';card.innerHTML=`<div class="slot-lock-icon">🔒</div><div class="slot-empty-label" style="font-size:10px;margin-top:3px">Upgrade slots</div>`;}else if(m){card.className='slot-card';const inc=(m.income*getIncomeMult()).toFixed(1);card.innerHTML=`<div class="slot-machine-icon">${m.icon}</div><div class="slot-machine-name">${m.name}</div><div class="slot-machine-income">+${inc}/sec</div><span class="rarity-badge rb-${m.rarity}" style="font-size:9px;padding:2px 8px;margin-top:2px">${RARITY_LABEL[m.rarity]}</span><div class="slot-action-bar"><button class="slot-btn take" onclick="takeMachineToInv(${i},event)">Retrieve</button><button class="slot-btn sell" onclick="sellMachineFromSlot(${i},event)">Sell</button></div>`;}else{card.className='slot-card empty';card.innerHTML=`<div class="slot-empty-icon">+</div><div class="slot-empty-label">Tap to place</div>`;card.onclick=()=>showSlotPicker(i);}grid.appendChild(card);}document.getElementById('gen-income-total').textContent=`+${getTotalIncome().toFixed(1)} coins/sec`;}
+function renderSlots(){const grid=document.getElementById('slots-grid');grid.innerHTML='';const total=getTotalSlots();for(let i=0;i<total+2;i++){const m=G.machines[i];const unlocked=i<total;const card=document.createElement('div');if(!unlocked){card.className='slot-card locked';card.innerHTML=`<div class="slot-lock-icon">🔒</div><div class="slot-empty-label" style="font-size:10px;margin-top:3px">Upgrade slots</div>`;}else if(m){card.className='slot-card';const inc=(m.income*getIncomeMult()).toFixed(1);card.innerHTML=`<div class="slot-machine-icon">${m.secret?'🤖':m.icon}</div><div class="slot-machine-name">${m.secret?'???':m.name}</div><div class="slot-machine-income">${m.secret?'? ? ?':'+'+inc+'/sec'}</div><span class="rarity-badge" style="font-size:9px;padding:2px 8px;margin-top:2px;${m.secret?'background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.3)':('background:var(--rb-bg,rgba(148,163,184,0.15));color:var(--'+m.rarity+',#94a3b8)')}">${m.secret?'???':RARITY_LABEL[m.rarity]}</span>`<div class="slot-action-bar"><button class="slot-btn take" onclick="takeMachineToInv(${i},event)">Retrieve</button><button class="slot-btn sell" onclick="sellMachineFromSlot(${i},event)">Sell</button></div>`;}else{card.className='slot-card empty';card.innerHTML=`<div class="slot-empty-icon">+</div><div class="slot-empty-label">Tap to place</div>`;card.onclick=()=>showSlotPicker(i);}grid.appendChild(card);}document.getElementById('gen-income-total').textContent=`+${getTotalIncome().toFixed(1)} coins/sec`;}
 function takeMachineToInv(i,e){e.stopPropagation();if(!G.machines[i])return;if(isBagFull()){showToast('Bag full! Sell items first.');return;}const m=G.machines[i];G.machines[i]=null;G.bag.push({...m});sfx('coin');showToast(m.name+' moved to bag.');renderSlots();updateUI();if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();}
 function sellMachineFromSlot(i,e){e.stopPropagation();if(!G.machines[i])return;const m=G.machines[i];const sp=getSellPrice(m);G.machines[i]=null;G.coins+=sp;G.totalCoins+=sp;sfx('sell');showToast(`${m.name} sold! +${fmt(sp)} coins`);renderSlots();updateUI();}
 function showSlotPicker(slotIdx){const old=document.getElementById('slot-picker-modal');if(old)old.remove();const groups=getGroupedBag();if(!groups.length){showToast('Bag empty! Roll first.');return;}const modal=document.createElement('div');modal.id='slot-picker-modal';modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:500;display:flex;align-items:flex-end;justify-content:center;padding:0 0 20px;';modal.onclick=e=>{if(e.target===modal)modal.remove();};const panel=document.createElement('div');panel.style.cssText='background:#1e1c2e;border:1px solid rgba(255,255,255,0.14);border-radius:20px 20px 16px 16px;padding:16px;width:100%;max-width:700px;max-height:72vh;overflow-y:auto;';const title=document.createElement('div');title.style.cssText='font-family:Nunito,sans-serif;font-size:13px;font-weight:800;color:#8b88aa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;';title.innerHTML=`Pick Machine for Slot ${slotIdx+1} <span onclick="document.getElementById('slot-picker-modal').remove()" style="cursor:pointer;font-size:20px;color:#5a5775;line-height:1;">×</span>`;panel.appendChild(title);const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:7px;';const sorted=[...groups].sort((a,b)=>rarityIdx(b.machine.rarity)-rarityIdx(a.machine.rarity)||b.machine.income-a.machine.income);sorted.forEach(g=>{const m=g.machine;const item=document.createElement('div');item.style.cssText='background:#252338;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 7px 9px;text-align:center;cursor:pointer;transition:border-color 0.15s;';const rarColor={common:'#94a3b8',uncommon:'#34d399',rare:'#60a5fa',epic:'#a78bfa',legendary:'#fbbf24',mythical:'#ff6ef7'}[m.rarity]||'#94a3b8';item.innerHTML=`<div style="font-size:22px;line-height:1">${m.icon}</div><div style="font-size:10px;font-weight:700;font-family:Nunito,sans-serif;color:#f0eeff;margin-top:4px;line-height:1.3">${m.name}</div><div style="font-size:10px;color:#34d399;margin-top:2px">+${m.income}/sec</div>${g.count>1?`<div style="font-size:10px;color:#a78bfa;margin-top:2px">x${g.count}</div>`:''}<div style="margin-top:4px;display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:800;font-family:Nunito,sans-serif;color:${rarColor};border:1px solid ${rarColor}44;background:${rarColor}18">${RARITY_LABEL[m.rarity]}</div>`;item.onmouseover=()=>item.style.borderColor='rgba(167,139,250,0.5)';item.onmouseout=()=>item.style.borderColor='rgba(255,255,255,0.1)';item.onclick=()=>{const idx=G.bag.findIndex(x=>x.name===m.name);if(idx===-1){showToast('Machine not found!');modal.remove();return;}G.machines[slotIdx]={...G.bag[idx]};G.bag.splice(idx,1);sfx('place');showToast(m.name+' placed in slot '+(slotIdx+1)+'!');modal.remove();renderSlots();updateUI();if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();};grid.appendChild(item);});panel.appendChild(grid);modal.appendChild(panel);document.body.appendChild(modal);}
@@ -712,7 +817,30 @@ function renderUpgrades(){const list=document.getElementById('upg-list');list.in
 function doUpgrade(id,isPrestige=false){const u=isPrestige?PRESTIGE_UPGRADES.find(x=>x.id===id):UPGRADES.find(x=>x.id===id);if(!u)return;const lv=isPrestige?(G.prestigeUpgradeLevels[id]||0):(G.upgradeLevels[id]||0);if(lv>=u.maxLv)return;if(isPrestige&&G.prestigeLevel<u.reqPrestige){showToast(`Requires Prestige ${u.reqPrestige}!`);return;}const cost=Math.round(u.baseCost*Math.pow(u.costMult,lv));if(G.coins<cost){sfx('error');showToast('Not enough coins!');return;}G.coins-=cost;if(isPrestige)G.prestigeUpgradeLevels[id]=(G.prestigeUpgradeLevels[id]||0)+1;else G.upgradeLevels[id]++;sfx('upgrade');showToast(u.name+' upgraded to Lv '+(lv+1)+'!');if(id==='autoroll')setupAutoRoll();if(id==='p_roll5'){document.getElementById('btn-roll5').disabled=false;}document.getElementById('btn-roll2').disabled=!G.upgradeLevels.roll2;document.getElementById('btn-roll3').disabled=!G.upgradeLevels.roll3;renderUpgrades();renderSlots();updateUI();if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();saveGame();showSaveStatus(true);}
 function setupAutoRoll(){clearInterval(G.autorollTimer);const lv=G.upgradeLevels.autoroll;if(!lv)return;const iv=[0,8000,4000,2000];const machineMind=G.prestigeUpgradeLevels['p_autoroll2']||0;const autoN=[1,2,3,5][Math.min(machineMind,3)];G.autorollTimer=setInterval(()=>doRollN(autoN,'common',true),iv[lv]);}
 function renderShop(){const grid=document.getElementById('dice-grid');grid.innerHTML='';DICE_SHOP.forEach(d=>{const stock=G.shopStock[d.id]??d.maxStock;const out=stock<=0;const low=stock>0&&stock<=3;const card=document.createElement('div');card.className='dice-card'+(out?' out-of-stock':'');const canBuy=!out&&G.coins>=d.price;card.innerHTML=`<span class="dice-icon">${d.icon}</span><div class="dice-name" style="color:${d.color}">${d.name}</div><div class="dice-desc">${d.desc}</div><div class="dice-stock ${out?'out':low?'low':'ok'}">${out?'Out of stock':low?`Only ${stock} left`:`In stock: ${stock}`}</div><div class="dice-price">${fmt(d.price)} coins</div><button class="btn-buy" style="background:${canBuy?d.btnColor:'#2a2840'};color:${canBuy?'#fff':'#5a5775'}" ${!canBuy?'disabled':''} onclick="buyDice('${d.id}')">${out?'Sold Out':canBuy?'Buy':'Not enough coins'}</button><div class="dice-timer">Reset: ${d.restockLabel}</div>`;grid.appendChild(card);});}
-function buyDice(id){const d=DICE_SHOP.find(x=>x.id===id);if(!d)return;if(G.shopStock[id]<=0){showToast('Out of stock!');return;}if(G.coins<d.price){showToast('Not enough coins!');return;}if(isBagFull()){showToast('Bag full! Sell or place a machine first.');return;}G.coins-=d.price;G.totalCoins+=0;sfx('buy');G.shopStock[id]--;const m=rollMachineWithMinRarity(d.minRarity);addToBag(m);showToast(`${d.icon} Got: ${m.icon} ${m.name} (${RARITY_LABEL[m.rarity]})!`,3000);if(m.rarity==='legendary'||m.rarity==='mythical'){triggerRollResult(m);}renderShop();updateUI();if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();saveGame();showSaveStatus(true);}
+function buyDice(id){const d=DICE_SHOP.find(x=>x.id===id);if(!d)return;if(G.shopStock[id]<=0){showToast('Out of stock!');return;}if(G.coins<d.price){showToast('Not enough coins!');return;}if(isBagFull()){showToast('Bag full! Sell or place a machine first.');return;}G.coins-=d.price;G.totalCoins+=0;sfx('buy');G.shopStock[id]--;
+// Secret 5% chance hanya dari Prismatic Die
+let m;
+if(id==='d_mythical'&&Math.random()<0.05){
+  m={...MACHINES.find(x=>x.secret)};
+  m.name='???';m.icon='🤖';m.rarity='secret';m.income=999999;m.secret=true;
+  addToBag(m);
+  // Special effect — jangan reveal nama asli
+  document.getElementById('roll-icon').textContent='🤖';
+  document.getElementById('roll-name').textContent='???';
+  document.getElementById('roll-rarity-wrap').innerHTML='<span class="rarity-badge" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.3);animation:mglow 2s ease-in-out infinite">? ? ?</span>';
+  showToast('🤖 ??? — Something unusual appeared...',5000);
+  const card=document.getElementById('roll-main-card');
+  card.style.transition='background 0.3s';
+  card.style.background='rgba(255,255,255,0.04)';
+  setTimeout(()=>card.style.background='',1500);
+  sfx('mythical');
+} else {
+  m=rollMachineWithMinRarity(d.minRarity);
+  addToBag(m);
+  showToast(`${d.icon} Got: ${m.icon} ${m.name} (${RARITY_LABEL[m.rarity]})!`,3000);
+  if(m.rarity==='legendary'||m.rarity==='mythical'){triggerRollResult(m);}
+}
+renderShop();updateUI();if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();saveGame();showSaveStatus(true);}
 
 /* ===== LEADERBOARD ===== */
 async function renderLeaderboard(){
@@ -743,9 +871,9 @@ async function renderLeaderboard(){
   // Error state
   if(fetchError){
     list.innerHTML=`<div style="text-align:center;padding:30px 0;color:var(--red);font-size:13px">
-      ❌ Gagal memuat leaderboard.<br>
-      <span style="color:var(--hint);font-size:11px;margin-top:6px;display:block">Cek koneksi internet atau Firestore rules kamu.</span>
-      <button onclick="renderLeaderboard()" style="margin-top:10px;padding:6px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">🔄 Coba lagi</button>
+      ❌ Failed to load leaderboard.<br>
+      <span style="color:var(--hint);font-size:11px;margin-top:6px;display:block">Check your internet connection or Firestore rules.</span>
+      <button onclick="renderLeaderboard()" style="margin-top:10px;padding:6px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">🔄 Try again</button>
     </div>`;
     return;
   }
@@ -763,8 +891,8 @@ async function renderLeaderboard(){
   if(rows.length===0){
     list.innerHTML=`<div style="text-align:center;padding:36px 0;color:var(--hint);font-size:13px">
       <div style="font-size:32px;margin-bottom:10px">🏆</div>
-      <div style="font-weight:700;margin-bottom:6px">Belum ada pemain di leaderboard</div>
-      <div style="font-size:12px">${user?'Kamu akan muncul setelah save game!':'Login terlebih dahulu untuk muncul di sini.'}</div>
+      <div style="font-weight:700;margin-bottom:6px">No players on the leaderboard yet</div>
+      <div style="font-size:12px">${user?'You will appear after saving the game!':'Sign in to appear on the leaderboard.'}</div>
       ${!user?`<button onclick="openAccountModal()" style="margin-top:12px;padding:8px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;">👤 Login</button>`:''}
     </div>`;
     return;
@@ -789,11 +917,11 @@ async function renderLeaderboard(){
   const footer=document.createElement('div');
   footer.style.cssText='text-align:center;padding:10px 0 4px;font-size:11px;color:var(--hint);';
   if(myIdx>=0){
-    footer.textContent=`Peringkat kamu: #${myIdx+1} dari ${rows.length} pemain`;
+    footer.textContent=`Your rank: #${myIdx+1} of ${rows.length} players`;
   } else if(!user){
-    footer.innerHTML=`<button onclick="openAccountModal()" style="padding:6px 16px;border-radius:8px;border:1px solid rgba(167,139,250,0.3);background:transparent;color:var(--accent);font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;">👤 Login untuk muncul di sini</button>`;
+    footer.innerHTML=`<button onclick="openAccountModal()" style="padding:6px 16px;border-radius:8px;border:1px solid rgba(167,139,250,0.3);background:transparent;color:var(--accent);font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;">👤 Sign in to appear here</button>`;
   } else {
-    footer.textContent=`${rows.length} pemain terdaftar • Skor kamu belum muncul, coba Save dulu`;
+    footer.textContent=`${rows.length} players registered • Your score not showing yet, try saving first`;
   }
   list.appendChild(footer);
 }
@@ -930,11 +1058,11 @@ function renderFusePage(){
     const prog = document.getElementById('fuse-lock-progress');
     if(prog){
       const pStr = G.prestigeLevel>=FUSE_REQ_PRESTIGE
-        ? '<span style="color:var(--green)">✓ Prestige terpenuhi</span>'
+        ? '<span style="color:var(--green)">✓ Prestige requirement met</span>'
         : `<span style="color:var(--red)">Prestige: ${G.prestigeLevel}/${FUSE_REQ_PRESTIGE}</span>`;
       const cStr = G.coins>=FUSE_REQ_COINS
-        ? '<span style="color:var(--green)">✓ Koin terpenuhi</span>'
-        : `<span style="color:var(--red)">Koin: ${fmt(G.coins)} / ${fmt(FUSE_REQ_COINS)}</span>`;
+        ? '<span style="color:var(--green)">✓ Coin requirement met</span>'
+        : `<span style="color:var(--red)">Coins: ${fmt(G.coins)} / ${fmt(FUSE_REQ_COINS)}</span>`;
       prog.innerHTML = pStr + '<br>' + cStr;
     }
     return;
@@ -951,7 +1079,7 @@ function renderFuseSlots(){
     if(!slot){
       el.innerHTML = `<div class="fuse-slot-inner empty" onclick="openFusePicker(${i})">
         <div style="font-size:22px;color:var(--hint)">+</div>
-        <div style="font-size:10px;color:var(--hint);margin-top:4px">Pilih mesin</div>
+        <div style="font-size:10px;color:var(--hint);margin-top:4px">Pick machine</div>
       </div>`;
     } else {
       const m = slot.machine;
@@ -960,7 +1088,7 @@ function renderFuseSlots(){
         <div class="fs-icon">${m.icon}</div>
         <div class="fs-name">${m.name}</div>
         <div class="fs-rarity" style="color:${rc};font-size:9px;font-weight:800;font-family:'Nunito',sans-serif">${RARITY_LABEL[m.rarity]}</div>
-        <div class="fs-remove" onclick="removeFuseSlot(${i},event)">✕ Hapus</div>
+        <div class="fs-remove" onclick="removeFuseSlot(${i},event)">✕ Remove</div>
       </div>`;
     }
   }
@@ -1029,7 +1157,7 @@ function renderFuseProbTable(){
 }
 
 function openFusePicker(slotIdx){
-  if(!isFuseUnlocked()){showToast('Fuse belum terbuka!');return;}
+  if(!isFuseUnlocked()){showToast('Fuse not unlocked yet!');return;}
   const old = document.getElementById('fuse-picker-modal');
   if(old) old.remove();
 
@@ -1043,7 +1171,7 @@ function openFusePicker(slotIdx){
     .map((m,i)=>({m,i}))
     .filter(({i})=>!usedBagIndices.includes(i));
 
-  if(!available.length){showToast('Bag kosong atau semua sudah dipilih!');return;}
+  if(!available.length){showToast('Bag is empty or all machines already selected!');return;}
 
   const modal = document.createElement('div');
   modal.id = 'fuse-picker-modal';
@@ -1055,7 +1183,7 @@ function openFusePicker(slotIdx){
 
   const title = document.createElement('div');
   title.style.cssText = 'font-family:Nunito,sans-serif;font-size:13px;font-weight:800;color:#8b88aa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;';
-  title.innerHTML = `Pilih Mesin untuk Slot ${slotIdx+1} <span onclick="document.getElementById('fuse-picker-modal').remove()" style="cursor:pointer;font-size:20px;color:#5a5775;line-height:1;">×</span>`;
+  title.innerHTML = `Pick Machine for Slot ${slotIdx+1} <span onclick="document.getElementById('fuse-picker-modal').remove()" style="cursor:pointer;font-size:20px;color:#5a5775;line-height:1;">×</span>`;
   panel.appendChild(title);
 
   const grid = document.createElement('div');
@@ -1092,9 +1220,9 @@ function openFusePicker(slotIdx){
 }
 
 function doFuse(){
-  if(!isFuseUnlocked()){showToast('Fuse belum terbuka!');return;}
-  if(fuseSlots.some(s=>s===null)){showToast('Pilih 3 mesin terlebih dahulu!');return;}
-  if(isBagFull()){showToast('Bag penuh! Jual beberapa mesin dulu.');return;}
+  if(!isFuseUnlocked()){showToast('Fuse not unlocked yet!');return;}
+  if(fuseSlots.some(s=>s===null)){showToast('Select 3 machines first!');return;}
+  if(isBagFull()){showToast('Bag full! Sell some machines first.');return;}
 
   const tiers = fuseSlots.map(s=>rarityToTier(s.machine.rarity));
   const probs = getFuseProbs(tiers);
@@ -1116,7 +1244,7 @@ function doFuse(){
   // Effects
   sfx(resultRarity==='mythical'?'mythical':resultRarity==='legendary'?'legendary':resultRarity==='epic'?'epic':'upgrade');
   const rarColor = {common:'#94a3b8',uncommon:'#34d399',rare:'#60a5fa',epic:'#a78bfa',legendary:'#fbbf24',mythical:'#ff6ef7'}[resultRarity];
-  showToast(`🔮 Fuse berhasil! Dapat: ${resultMachine.icon} ${resultMachine.name} (${RARITY_LABEL[resultRarity]})`, 3500);
+  showToast(`🔮 Fuse success! Got: ${resultMachine.icon} ${resultMachine.name} (${RARITY_LABEL[resultRarity]})`, 3500);
 
   if(resultRarity==='legendary'||resultRarity==='mythical'){
     G.legendaryCount++;
@@ -1138,6 +1266,478 @@ function doFuse(){
   }
 }
 
+
+/* ===== AI COMPANION SYSTEM ===== */
+const AI_DEFS = {
+  gmini: {
+    id:'gmini', name:'G-Mini', icon:'🟢', color:'#34d399', colorDark:'rgba(52,211,153,0.15)',
+    desc:'A cheerful AI assistant. Boosts your factory income and automatically sells Common machines.',
+    perks:['2x income multiplier','Auto-sell Common machines every 30s','Gives daily tips'],
+    req:{basic:50,program:10,core:3},
+    lore:'"Not to be confused with any real AI product. Totally different. Totally."'
+  },
+  talkgpt: {
+    id:'talkgpt', name:'TalkGPT', icon:'🔵', color:'#60a5fa', colorDark:'rgba(96,165,250,0.15)',
+    desc:'A verbose AI that talks a lot but also works hard. Auto-places your best machines.',
+    perks:['1.5x income multiplier','Auto place best machines every 20s','Gives strategy tips'],
+    req:{basic:30,program:15,core:5},
+    lore:'"As an AI language model, I can confirm that placing Legendary machines is optimal."'
+  },
+  dexter: {
+    id:'dexter', name:'Dexter', icon:'🟣', color:'#a78bfa', colorDark:'rgba(167,139,250,0.15)',
+    desc:"Claude's mysterious friend from Mobile Legends. Somehow ended up in your factory.",
+    perks:['3x income multiplier','Auto-sell + Auto place best','Unlocks secret Dexter Mode'],
+    req:{basic:80,program:20,core:8},
+    lore:'"...I should not be here. But since I am, let me optimize your factory."'
+  }
+};
+
+let _puzzleAITarget = null;
+let _puzzleStep = 0; // 0=coding 1=cable 2=timing
+let _puzzleScore = 0;
+let _cableSelected = null;
+let _cableConnections = {};
+let _timingInterval = null;
+let _timingPos = 0;
+let _timingDir = 1;
+let _codingSeq = [];
+let _codingIdx = 0;
+let _codingInput = '';
+
+function updateAIMatsUI(){
+  const b=document.getElementById('mat-basic');
+  const p=document.getElementById('mat-program');
+  const c=document.getElementById('mat-core');
+  if(b)b.textContent=G.matBasic;
+  if(p)p.textContent=G.matProgram;
+  if(c)c.textContent=G.matCore;
+}
+
+function renderAIPage(){
+  updateAIMatsUI();
+  // Companion bar
+  const bar = document.getElementById('ai-companion-bar');
+  if(bar){
+    if(G.activeAI){
+      const ai = AI_DEFS[G.activeAI];
+      bar.style.display='flex';
+      document.getElementById('ai-comp-icon').textContent=ai.icon;
+      document.getElementById('ai-comp-name').textContent=ai.name;
+      document.getElementById('ai-comp-perks').textContent=ai.perks.join(' • ');
+    } else {
+      bar.style.display='none';
+    }
+  }
+  // AI cards
+  const container = document.getElementById('ai-cards');
+  if(!container) return;
+  container.innerHTML='';
+  Object.values(AI_DEFS).forEach(ai=>{
+    const owned = G.ownedAIs.includes(ai.id);
+    const isActive = G.activeAI===ai.id;
+    const hasBasic = G.matBasic>=ai.req.basic;
+    const hasProg  = G.matProgram>=ai.req.program;
+    const hasCore  = G.matCore>=ai.req.core;
+    const canCraft = hasBasic&&hasProg&&hasCore&&!owned;
+    const card = document.createElement('div');
+    card.className='ai-card'+(isActive?' active-ai':owned?' owned':'');
+    card.innerHTML=`
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="font-size:36px;line-height:1">${ai.icon}</div>
+        <div style="flex:1">
+          <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:${ai.color}">${ai.name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${ai.desc}</div>
+        </div>
+        ${isActive?'<span style="font-size:10px;background:rgba(52,211,153,0.15);color:var(--green);border:1px solid rgba(52,211,153,0.3);border-radius:999px;padding:2px 10px;font-weight:700;font-family:'Nunito',sans-serif;">Active</span>':''}
+        ${owned&&!isActive?'<span style="font-size:10px;background:rgba(167,139,250,0.12);color:var(--accent);border:1px solid rgba(167,139,250,0.25);border-radius:999px;padding:2px 10px;font-weight:700;font-family:'Nunito',sans-serif;">Owned</span>':''}
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6">
+        ${ai.perks.map(p=>'✦ '+p).join('<br>')}
+      </div>
+      <div style="font-size:10px;color:var(--hint);font-style:italic;margin-bottom:10px">${ai.lore}</div>
+      <div class="ai-req-row">
+        <span class="ai-req-pill ${hasBasic?'ok':'no'}">🔧 ${G.matBasic}/${ai.req.basic} Basic</span>
+        <span class="ai-req-pill ${hasProg?'ok':'no'}">💾 ${G.matProgram}/${ai.req.program} Program</span>
+        <span class="ai-req-pill ${hasCore?'ok':'no'}">💠 ${G.matCore}/${ai.req.core} Core</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        ${!owned?`<button onclick="startAIPuzzle('${ai.id}')" ${canCraft?'':'disabled'} style="flex:1;padding:10px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;background:${canCraft?'linear-gradient(135deg,'+ai.color+'88,'+ai.color+')':'var(--bg3)'};color:${canCraft?'#fff':'var(--hint)'};border:none;border-radius:10px;cursor:${canCraft?'pointer':'not-allowed'};transition:opacity 0.2s;">
+          ${canCraft?'🔨 Build '+ai.name:'Need more materials'}
+        </button>`:''}
+        ${owned&&!isActive?`<button onclick="activateAI('${ai.id}')" style="flex:1;padding:10px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;background:linear-gradient(135deg,${ai.color}88,${ai.color});color:#fff;border:none;border-radius:10px;cursor:pointer;">⚡ Set Active</button>`:''}
+        ${isActive?`<div style="flex:1;padding:10px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--green);text-align:center;background:rgba(52,211,153,0.08);border-radius:10px;border:1px solid rgba(52,211,153,0.2);">✓ Currently Active</div>`:''}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function activateAI(id){
+  G.activeAI = id;
+  setupAITimers();
+  saveGame();
+  renderAIPage();
+  updateUI();
+  const ai = AI_DEFS[id];
+  showToast(`${ai.icon} ${ai.name} is now your active companion!`, 3000);
+  sfx('upgrade');
+  // Dexter secret mode
+  if(id==='dexter'){
+    setTimeout(()=>showToast('🟣 Dexter Mode unlocked! Check your income...', 3000), 1500);
+  }
+}
+
+function dismissAI(){
+  if(!G.activeAI) return;
+  const ai = AI_DEFS[G.activeAI];
+  G.activeAI = null;
+  clearInterval(G.aiAutoSellTimer);
+  clearInterval(G.aiAutoPlaceTimer);
+  saveGame();
+  renderAIPage();
+  updateUI();
+  showToast(`${ai.name} dismissed.`);
+}
+
+function setupAITimers(){
+  clearInterval(G.aiAutoSellTimer);
+  clearInterval(G.aiAutoPlaceTimer);
+  if(!G.activeAI) return;
+  if(G.activeAI==='gmini'){
+    G.aiAutoSellTimer=setInterval(()=>{
+      const items=G.bag.filter(m=>m.rarity==='common');
+      if(!items.length) return;
+      let total=0;items.forEach(m=>{total+=getSellPrice(m);});
+      G.bag=G.bag.filter(m=>m.rarity!=='common');
+      G.coins+=total;G.totalCoins+=total;G.allTimeCoins+=total;
+      showToast(`🟢 G-Mini auto-sold ${items.length} Common → +${fmt(total)}`,2500);
+      updateUI();
+      if(document.getElementById('page-inventory').classList.contains('active'))renderInventory();
+    },30000);
+  }
+  if(G.activeAI==='talkgpt'){
+    G.aiAutoPlaceTimer=setInterval(()=>{
+      placeBestInAll();
+      showToast('🔵 TalkGPT auto-placed your best machines!',2000);
+    },20000);
+  }
+  if(G.activeAI==='dexter'){
+    G.aiAutoSellTimer=setInterval(()=>{
+      const items=G.bag.filter(m=>m.rarity==='common'||m.rarity==='uncommon');
+      if(items.length){let t=0;items.forEach(m=>t+=getSellPrice(m));G.bag=G.bag.filter(m=>m.rarity!=='common'&&m.rarity!=='uncommon');G.coins+=t;G.totalCoins+=t;G.allTimeCoins+=t;updateUI();}
+    },25000);
+    G.aiAutoPlaceTimer=setInterval(()=>placeBestInAll(),15000);
+  }
+}
+
+/* ===== PUZZLE SYSTEM ===== */
+function startAIPuzzle(aiId){
+  const ai = AI_DEFS[aiId];
+  if(G.matBasic<ai.req.basic||G.matProgram<ai.req.program||G.matCore<ai.req.core){
+    showToast('Not enough materials!'); return;
+  }
+  _puzzleAITarget = aiId;
+  _puzzleStep = 0;
+  _puzzleScore = 0;
+  // Deduct materials
+  G.matBasic -= ai.req.basic;
+  G.matProgram -= ai.req.program;
+  G.matCore -= ai.req.core;
+  updateAIMatsUI();
+  openPuzzleOverlay();
+  showPuzzleStep(0);
+}
+
+function openPuzzleOverlay(){
+  const el = document.getElementById('ai-puzzle-overlay');
+  if(el){el.style.display='flex';}
+}
+
+function closePuzzleOverlay(){
+  const el = document.getElementById('ai-puzzle-overlay');
+  if(el){el.style.display='none';}
+  clearInterval(_timingInterval);
+  _timingInterval=null;
+}
+
+function updatePuzzleProgress(step){
+  const fill = document.getElementById('puzzle-prog-fill');
+  if(fill) fill.style.width = (step/3*100)+'%';
+}
+
+function showPuzzleStep(step){
+  updatePuzzleProgress(step);
+  if(step===0) showCodingPuzzle();
+  else if(step===1) showCablePuzzle();
+  else if(step===2) showTimingPuzzle();
+  else completePuzzle();
+}
+
+/* ── PUZZLE 1: CODING ──────────────────────────────────────────────── */
+function showCodingPuzzle(){
+  const ai = AI_DEFS[_puzzleAITarget];
+  const SEQUENCES = [
+    ['I','N','I','T'],
+    ['B','O','O','T'],
+    ['L','O','A','D'],
+    ['R','U','N'],
+    ['S','T','A','R','T'],
+  ];
+  _codingSeq = SEQUENCES[Math.floor(Math.random()*SEQUENCES.length)];
+  _codingIdx = 0;
+  _codingInput = '';
+  const content = document.getElementById('puzzle-content');
+  content.innerHTML = `
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:28px;margin-bottom:6px">${ai.icon}</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900">Step 1 of 3 — Coding</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Type the sequence exactly using your keyboard</div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:20px" id="coding-seq-display">
+      ${_codingSeq.map((k,i)=>`<div id="ckey-${i}" style="width:40px;height:40px;border-radius:8px;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--hint)">${k}</div>`).join('')}
+    </div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:12px;color:var(--hint);margin-bottom:8px">Your input:</div>
+      <div id="coding-input-display" style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;letter-spacing:8px;color:var(--accent);min-height:30px">&nbsp;</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center" id="coding-keyboard">
+      ${_codingSeq.map(k=>`<button class="puz-key" onclick="codingKeyPress('${k}')">${k}</button>`).join('')}
+    </div>
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="codingKeyPress('RESET')" style="padding:5px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--hint);font-size:11px;cursor:pointer;">↺ Reset</button>
+    </div>`;
+  // Also listen to real keyboard
+  document.onkeydown = (e)=>{
+    const k = e.key.toUpperCase();
+    if(_codingSeq.includes(k)) codingKeyPress(k);
+  };
+}
+
+function codingKeyPress(key){
+  if(key==='RESET'){_codingIdx=0;_codingInput='';updateCodingDisplay();return;}
+  const expected = _codingSeq[_codingIdx];
+  const btn = document.querySelector(`.puz-key:not(.hit)`);
+  if(key===expected){
+    _codingInput += key;
+    const keyEl = document.getElementById('ckey-'+_codingIdx);
+    if(keyEl){keyEl.style.background='rgba(52,211,153,0.2)';keyEl.style.borderColor='var(--green)';keyEl.style.color='var(--green)';}
+    _codingIdx++;
+    updateCodingDisplay();
+    sfx('tab');
+    if(_codingIdx>=_codingSeq.length){
+      document.onkeydown=null;
+      setTimeout(()=>{_puzzleScore++;_puzzleStep=1;showPuzzleStep(1);},600);
+    }
+  } else {
+    sfx('error');
+    _codingIdx=0;_codingInput='';
+    // Flash red on all
+    _codingSeq.forEach((_,i)=>{
+      const el=document.getElementById('ckey-'+i);
+      if(el){el.style.background='rgba(248,113,113,0.15)';el.style.borderColor='var(--red)';
+      setTimeout(()=>{el.style.background='var(--bg3)';el.style.borderColor='var(--border2)';el.style.color='var(--hint)';},400);}
+    });
+    updateCodingDisplay();
+  }
+}
+
+function updateCodingDisplay(){
+  const el=document.getElementById('coding-input-display');
+  if(el) el.textContent=_codingInput||' ';
+}
+
+/* ── PUZZLE 2: CABLE ───────────────────────────────────────────────── */
+function showCablePuzzle(){
+  const ai = AI_DEFS[_puzzleAITarget];
+  _cableSelected = null;
+  _cableConnections = {};
+  document.onkeydown = null;
+  const colors = ['#f87171','#34d399','#60a5fa','#fbbf24'];
+  const labels = ['PWR','DAT','SIG','GND'];
+  // Shuffle right side
+  const rightOrder = [0,1,2,3].sort(()=>Math.random()-0.5);
+  const content = document.getElementById('puzzle-content');
+  content.innerHTML = `
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:28px;margin-bottom:6px">${ai.icon}</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900">Step 2 of 3 — Cable Wiring</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Connect matching colored cables. Tap left then right.</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 10px;gap:8px" id="cable-area">
+      <div style="display:flex;flex-direction:column;gap:14px" id="cable-left">
+        ${colors.map((c,i)=>`<div style="display:flex;align-items:center;gap:8px">
+          <div class="cable-node" id="cl-${i}" data-side="left" data-idx="${i}" style="border-color:${c};background:${c}22;" onclick="cableClick('left',${i},this)"></div>
+          <span style="font-size:11px;font-weight:700;font-family:'Nunito',sans-serif;color:${c}">${labels[i]}</span>
+        </div>`).join('')}
+      </div>
+      <div style="flex:1;position:relative;height:160px" id="cable-canvas">
+        <svg id="cable-svg" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;"></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px" id="cable-right">
+        ${rightOrder.map((ri,pos)=>`<div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+          <span style="font-size:11px;font-weight:700;font-family:'Nunito',sans-serif;color:${colors[ri]}">${labels[ri]}</span>
+          <div class="cable-node" id="cr-${pos}" data-side="right" data-idx="${pos}" data-real="${ri}" style="border-color:${colors[ri]};background:${colors[ri]}22;" onclick="cableClick('right',${pos},this)"></div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--hint)" id="cable-status">Select a cable on the left to start</div>`;
+  // Store right order for checking
+  content._rightOrder = rightOrder;
+  window._cableRightOrder = rightOrder;
+  window._cableColors = colors;
+}
+
+function cableClick(side, idx, el){
+  if(side==='left'){
+    _cableSelected = idx;
+    document.querySelectorAll('.cable-node').forEach(n=>n.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('cable-status').textContent = 'Now select the matching cable on the right';
+  } else if(side==='right' && _cableSelected!==null){
+    const realRight = parseInt(el.dataset.real);
+    const isCorrect = _cableSelected===realRight;
+    // Draw line
+    const leftEl = document.getElementById('cl-'+_cableSelected);
+    const svg = document.getElementById('cable-svg');
+    const area = document.getElementById('cable-area');
+    if(svg&&leftEl&&area){
+      const areaRect = area.getBoundingClientRect();
+      const leftRect = leftEl.getBoundingClientRect();
+      const rightRect = el.getBoundingClientRect();
+      const x1 = leftRect.right - areaRect.left;
+      const y1 = leftRect.top + leftRect.height/2 - areaRect.top;
+      const x2 = rightRect.left - areaRect.left;
+      const y2 = rightRect.top + rightRect.height/2 - areaRect.top;
+      const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const cx = (x1+x2)/2;
+      line.setAttribute('d',`M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}`);
+      line.setAttribute('stroke', isCorrect ? window._cableColors[_cableSelected] : '#f87171');
+      line.setAttribute('stroke-width','2.5');
+      line.setAttribute('fill','none');
+      line.setAttribute('opacity','0.8');
+      svg.appendChild(line);
+    }
+    if(isCorrect){
+      sfx('tab');
+      _cableConnections[_cableSelected]=idx;
+      el.style.background=window._cableColors[realRight]+'55';
+      document.getElementById('cl-'+_cableSelected).style.background=window._cableColors[_cableSelected]+'55';
+      _cableSelected=null;
+      document.querySelectorAll('.cable-node').forEach(n=>n.classList.remove('selected'));
+      document.getElementById('cable-status').textContent=`Connected ${Object.keys(_cableConnections).length}/4 cables`;
+      if(Object.keys(_cableConnections).length>=4){
+        setTimeout(()=>{_puzzleScore++;_puzzleStep=2;showPuzzleStep(2);},700);
+      }
+    } else {
+      sfx('error');
+      _cableSelected=null;
+      document.querySelectorAll('.cable-node').forEach(n=>n.classList.remove('selected'));
+      document.getElementById('cable-status').textContent='Wrong connection! Try again.';
+      setTimeout(()=>{
+        if(svg) svg.querySelectorAll('path:last-child').forEach(p=>{if(p.getAttribute('stroke')==='#f87171')p.remove();});
+      },500);
+    }
+  }
+}
+
+/* ── PUZZLE 3: TIMING BAR ──────────────────────────────────────────── */
+function showTimingPuzzle(){
+  const ai = AI_DEFS[_puzzleAITarget];
+  let hits = 0; const needed = 3;
+  _timingPos = 0; _timingDir = 1;
+  let speed = 1.2; // % per frame
+  clearInterval(_timingInterval);
+  const content = document.getElementById('puzzle-content');
+  content.innerHTML = `
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:28px;margin-bottom:6px">${ai.icon}</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900">Step 3 of 3 — Assembly</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Hit the green zone! Click or press Space. <b style="color:var(--green)">${needed} hits needed.</b></div>
+    </div>
+    <div id="timing-hits" style="text-align:center;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:var(--green);margin-bottom:10px">Hits: 0/${needed}</div>
+    <div class="timing-bar-track" id="timing-track" onclick="timingHit()">
+      <div class="timing-bar-zone" id="timing-zone" style="left:35%;width:25%;"></div>
+      <div class="timing-bar-cursor" id="timing-cursor" style="left:0%;"></div>
+    </div>
+    <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--hint)">Tap the bar or press <b style="color:var(--text)">Space</b></div>
+    <div id="timing-feedback" style="text-align:center;margin-top:8px;font-size:13px;font-weight:700;min-height:20px;"></div>`;
+
+  document.onkeydown=(e)=>{if(e.code==='Space'){e.preventDefault();timingHit();}};
+
+  _timingInterval = setInterval(()=>{
+    _timingPos += speed * _timingDir;
+    if(_timingPos>=92||_timingPos<=0) _timingDir*=-1;
+    const cursor=document.getElementById('timing-cursor');
+    if(cursor) cursor.style.left=_timingPos+'%';
+  },16);
+
+  window._timingHits=hits;
+  window._timingNeeded=needed;
+  window._timingSpeed=speed;
+}
+
+function timingHit(){
+  const zone = document.getElementById('timing-zone');
+  const fb = document.getElementById('timing-feedback');
+  if(!zone) return;
+  const zoneLeft = 35, zoneRight = 60;
+  const inZone = _timingPos>=zoneLeft && _timingPos<=zoneRight;
+  if(inZone){
+    window._timingHits++;
+    sfx('upgrade');
+    if(fb){fb.textContent='✓ Perfect!';fb.style.color='var(--green)';}
+    const hitsEl=document.getElementById('timing-hits');
+    if(hitsEl) hitsEl.textContent=`Hits: ${window._timingHits}/${window._timingNeeded}`;
+    // Speed up slightly
+    window._timingSpeed=(window._timingSpeed||1.2)*1.3;
+    clearInterval(_timingInterval);
+    _timingInterval=setInterval(()=>{
+      _timingPos+=window._timingSpeed*_timingDir;
+      if(_timingPos>=92||_timingPos<=0)_timingDir*=-1;
+      const c=document.getElementById('timing-cursor');
+      if(c)c.style.left=_timingPos+'%';
+    },16);
+    if(window._timingHits>=window._timingNeeded){
+      clearInterval(_timingInterval);_timingInterval=null;
+      document.onkeydown=null;
+      _puzzleScore++;
+      setTimeout(completePuzzle,600);
+    }
+  } else {
+    sfx('error');
+    if(fb){fb.textContent='✗ Missed!';fb.style.color='var(--red)';}
+    setTimeout(()=>{if(fb)fb.textContent='';},600);
+  }
+}
+
+function completePuzzle(){
+  clearInterval(_timingInterval);_timingInterval=null;
+  document.onkeydown=null;
+  const ai=AI_DEFS[_puzzleAITarget];
+  const content=document.getElementById('puzzle-content');
+  content.innerHTML=`
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:52px;margin-bottom:12px;animation:tut-bounce 0.5s cubic-bezier(.34,1.56,.64,1)">${ai.icon}</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;color:${ai.color};margin-bottom:8px">${ai.name} Created!</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7">
+        Assembly complete. ${ai.name} is ready to assist your factory!
+      </div>
+      <button onclick="finishAIBuild()" style="padding:12px 32px;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;background:linear-gradient(135deg,${ai.color}88,${ai.color});color:#fff;border:none;border-radius:12px;cursor:pointer;">
+        ⚡ Activate ${ai.name}
+      </button>
+    </div>`;
+  updatePuzzleProgress(3);
+  sfx('prestige');
+}
+
+function finishAIBuild(){
+  const ai=AI_DEFS[_puzzleAITarget];
+  if(!G.ownedAIs.includes(_puzzleAITarget)) G.ownedAIs.push(_puzzleAITarget);
+  closePuzzleOverlay();
+  activateAI(_puzzleAITarget);
+  renderAIPage();
+  showToast(`🎉 ${ai.name} built and activated!`,3000);
+}
+
 const SAVE_KEY='factoryRNG_v1';
 
 
@@ -1157,7 +1757,7 @@ async function pushLeaderboardScore(){
 }
 
 /* ===== SAVE / LOAD ===== */
-function saveGame(){try{const data={coins:G.coins,totalCoins:G.totalCoins,prestigeLevel:G.prestigeLevel,prestigeBonus:G.prestigeBonus,upgradeLevels:{...G.upgradeLevels},machines:G.machines.map(m=>m?{name:m.name,icon:m.icon,rarity:m.rarity,income:m.income,chance:m.chance}:null),bag:G.bag.map(m=>({name:m.name,icon:m.icon,rarity:m.rarity,income:m.income,chance:m.chance})),totalRolls:G.totalRolls,legendaryCount:G.legendaryCount,bestRarity:G.bestRarity,shopStock:{...G.shopStock},lastDailyDate:G.lastDailyDate,dailyStreak:G.dailyStreak,achievements:{...G.achievements},allTimeCoins:G.allTimeCoins,allTimeRolls:G.allTimeRolls,allTimeLegendary:G.allTimeLegendary,allTimeMythical:G.allTimeMythical,allTimePrestige:G.allTimePrestige,prestigeUpgradeLevels:{...G.prestigeUpgradeLevels},nextRestockAt:Date.now()+(restockSecondsLeft*1000),savedAt:Date.now()};const json=JSON.stringify(data);localStorage.setItem(SAVE_KEY,json);const user=getCurrentUser();if(user){try{const accounts=getAccounts();if(accounts[user.username]){accounts[user.username].save=json;saveAccounts(accounts);}}catch(e){}if(user.uid&&window._fbUser){saveCloudSave(user.uid,window._fbUser.idToken);pushLeaderboardScore();}}return true;}catch(e){return false;}}
+function saveGame(){try{const data={coins:G.coins,totalCoins:G.totalCoins,prestigeLevel:G.prestigeLevel,prestigeBonus:G.prestigeBonus,upgradeLevels:{...G.upgradeLevels},machines:G.machines.map(m=>m?{name:m.name,icon:m.icon,rarity:m.rarity,income:m.income,chance:m.chance}:null),bag:G.bag.map(m=>({name:m.name,icon:m.icon,rarity:m.rarity,income:m.income,chance:m.chance})),totalRolls:G.totalRolls,legendaryCount:G.legendaryCount,bestRarity:G.bestRarity,shopStock:{...G.shopStock},lastDailyDate:G.lastDailyDate,dailyStreak:G.dailyStreak,achievements:{...G.achievements},allTimeCoins:G.allTimeCoins,allTimeRolls:G.allTimeRolls,allTimeLegendary:G.allTimeLegendary,allTimeMythical:G.allTimeMythical,allTimePrestige:G.allTimePrestige,matBasic:G.matBasic,matProgram:G.matProgram,matCore:G.matCore,activeAI:G.activeAI,ownedAIs:G.ownedAIs,prestigeUpgradeLevels:{...G.prestigeUpgradeLevels},nextRestockAt:Date.now()+(restockSecondsLeft*1000),savedAt:Date.now()};const json=JSON.stringify(data);localStorage.setItem(SAVE_KEY,json);const user=getCurrentUser();if(user){try{const accounts=getAccounts();if(accounts[user.username]){accounts[user.username].save=json;saveAccounts(accounts);}}catch(e){}if(user.uid&&window._fbUser){saveCloudSave(user.uid,window._fbUser.idToken);pushLeaderboardScore();}}return true;}catch(e){return false;}}
 function loadGame(){try{const user=getCurrentUser();let raw=null;if(user){const accounts=getAccounts();if(accounts[user.username]&&accounts[user.username].save){raw=accounts[user.username].save;}}if(!raw)raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);applyLoadedData(data);return data.savedAt||true;}catch(e){return false;}}
 async function resetGame(){if(!confirm('Reset all data? Your progress will be permanently lost!'))return;const fbUser=window._fbUser;if(fbUser&&fbUser.uid&&fbUser.idToken){try{await fbSaveData(fbUser.uid,fbUser.idToken,JSON.stringify({_empty:true,savedAt:Date.now()}));}catch(e){console.warn('Cloud reset failed:',e);}}localStorage.removeItem(SAVE_KEY);G.coins=30;G.totalCoins=0;G.prestigeLevel=0;G.prestigeBonus=0;G.upgradeLevels={slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0};G.prestigeUpgradeLevels={};G.machines=[];G.bag=[];G.selectedItem=null;G.totalRolls=0;G.legendaryCount=0;G.bestRarity=null;G.lastDailyDate=null;G.dailyStreak=0;G.achievements={};G.allTimeCoins=0;G.allTimeRolls=0;G.allTimeLegendary=0;G.allTimeMythical=0;G.allTimePrestige=0;DICE_SHOP.forEach(d=>{G.shopStock[d.id]=d.maxStock;});initShopStockRNG();clearInterval(G.autorollTimer);document.getElementById('btn-roll2').disabled=true;document.getElementById('btn-roll3').disabled=true;document.getElementById('btn-roll5').disabled=true;document.getElementById('roll-icon').textContent='🎲';document.getElementById('roll-name').textContent='Ready to roll!';document.getElementById('roll-rarity-wrap').innerHTML='';document.getElementById('stat-rolls').textContent='0';document.getElementById('stat-best').textContent='—';document.getElementById('stat-leg').textContent='0';updateUI();renderSlots();switchTab('roll');showToast('🔄 Data reset! Starting fresh.',2500);}
 function showSaveStatus(ok){const el=document.getElementById('save-status');if(!el)return;el.textContent=ok?'✓ Saved':'✗ Failed';el.style.color=ok?'var(--green)':'var(--red)';clearTimeout(el._to);el._to=setTimeout(()=>{const d=new Date();el.textContent=`Last: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;el.style.color='var(--hint)';},2000);}
@@ -1210,7 +1810,7 @@ function updateAccountUI(){const user=getCurrentUser();const pill=document.getEl
 const RESTOCK_INTERVAL=180;
 let restockSecondsLeft=RESTOCK_INTERVAL;
 const RESTOCK_CONFIG={d_common:{minStock:5,maxStock:20,appearChance:1.0},d_uncommon:{minStock:0,maxStock:12,appearChance:0.85},d_rare:{minStock:0,maxStock:8,appearChance:0.75},d_epic:{minStock:0,maxStock:5,appearChance:0.60},d_legendary:{minStock:0,maxStock:3,appearChance:0.40},d_mythical:{minStock:0,maxStock:2,appearChance:0.15}};
-function applyLoadedData(data){G.coins=data.coins??30;G.totalCoins=data.totalCoins??0;G.prestigeLevel=data.prestigeLevel??0;G.prestigeBonus=data.prestigeBonus??0;G.upgradeLevels=Object.assign({slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0},data.upgradeLevels||{});G.machines=(data.machines||[]).map(m=>m||null);G.bag=data.bag||[];G.totalRolls=data.totalRolls??0;G.legendaryCount=data.legendaryCount??0;G.bestRarity=data.bestRarity??null;G.shopStock=Object.assign({},data.shopStock||{});G.prestigeUpgradeLevels=Object.assign({},data.prestigeUpgradeLevels||{});G.lastDailyDate=data.lastDailyDate||null;G.dailyStreak=data.dailyStreak||0;G.achievements=Object.assign({},data.achievements||{});G.allTimeCoins=data.allTimeCoins||0;G.allTimeRolls=data.allTimeRolls||0;G.allTimeLegendary=data.allTimeLegendary||0;G.allTimeMythical=data.allTimeMythical||0;G.allTimePrestige=data.allTimePrestige||0;DICE_SHOP.forEach(d=>{if(G.shopStock[d.id]===undefined)G.shopStock[d.id]=d.maxStock;});if(data.nextRestockAt){const secsLeft=Math.round((data.nextRestockAt-Date.now())/1000);restockSecondsLeft=secsLeft>0&&secsLeft<=RESTOCK_INTERVAL?secsLeft:RESTOCK_INTERVAL;}}
+function applyLoadedData(data){G.coins=data.coins??30;G.totalCoins=data.totalCoins??0;G.prestigeLevel=data.prestigeLevel??0;G.prestigeBonus=data.prestigeBonus??0;G.upgradeLevels=Object.assign({slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0},data.upgradeLevels||{});G.machines=(data.machines||[]).map(m=>m||null);G.bag=data.bag||[];G.totalRolls=data.totalRolls??0;G.legendaryCount=data.legendaryCount??0;G.bestRarity=data.bestRarity??null;G.shopStock=Object.assign({},data.shopStock||{});G.prestigeUpgradeLevels=Object.assign({},data.prestigeUpgradeLevels||{});G.lastDailyDate=data.lastDailyDate||null;G.dailyStreak=data.dailyStreak||0;G.achievements=Object.assign({},data.achievements||{});G.allTimeCoins=data.allTimeCoins||0;G.allTimeRolls=data.allTimeRolls||0;G.allTimeLegendary=data.allTimeLegendary||0;G.allTimeMythical=data.allTimeMythical||0;G.allTimePrestige=data.allTimePrestige||0;G.matBasic=data.matBasic||0;G.matProgram=data.matProgram||0;G.matCore=data.matCore||0;G.activeAI=data.activeAI||null;G.ownedAIs=data.ownedAIs||[];DICE_SHOP.forEach(d=>{if(G.shopStock[d.id]===undefined)G.shopStock[d.id]=d.maxStock;});if(data.nextRestockAt){const secsLeft=Math.round((data.nextRestockAt-Date.now())/1000);restockSecondsLeft=secsLeft>0&&secsLeft<=RESTOCK_INTERVAL?secsLeft:RESTOCK_INTERVAL;}}
 function updateUIAfterLoad(savedAt){document.getElementById('btn-roll2').disabled=!G.upgradeLevels.roll2;document.getElementById('btn-roll3').disabled=!G.upgradeLevels.roll3;if(G.upgradeLevels.autoroll>0)setupAutoRoll();if(G.bestRarity)document.getElementById('stat-best').textContent=RARITY_LABEL[G.bestRarity]||'—';document.getElementById('stat-rolls').textContent=G.totalRolls;document.getElementById('stat-leg').textContent=G.legendaryCount;updateUI();renderSlots();if(savedAt){const d=new Date(savedAt);const ts=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;const el=document.getElementById('save-status');if(el){el.textContent=`Last: ${ts}`;el.style.color='var(--hint)';}}}
 function doRestock(){const log=[];DICE_SHOP.forEach(d=>{const cfg=RESTOCK_CONFIG[d.id];if(!cfg)return;if(Math.random()>cfg.appearChance){G.shopStock[d.id]=0;log.push(`${d.icon} ${d.name}: sold out`);}else{const newStock=Math.floor(Math.random()*(cfg.maxStock-cfg.minStock+1))+cfg.minStock;G.shopStock[d.id]=newStock;if(newStock>0)log.push(`${d.icon} ${d.name}: ${newStock}`);else log.push(`${d.icon} ${d.name}: sold out`);}});saveGame();if(document.getElementById('page-shop').classList.contains('active'))renderShop();sfx('restock');showToast('🎲 Shop restocked!',2500);}
 function updateRestockUI(){const m=Math.floor(restockSecondsLeft/60);const s=restockSecondsLeft%60;const el=document.getElementById('restock-countdown');if(el)el.textContent=`${m}:${s.toString().padStart(2,'0')}`;const pct=(restockSecondsLeft/RESTOCK_INTERVAL)*100;const bar=document.getElementById('restock-progress');if(bar)bar.style.width=pct+'%';}
@@ -1238,7 +1838,7 @@ if(G.upgradeLevels.autoroll>0)setupAutoRoll();
 if(G.bestRarity)document.getElementById('stat-best').textContent=RARITY_LABEL[G.bestRarity]||'—';
 document.getElementById('stat-rolls').textContent=G.totalRolls;
 document.getElementById('stat-leg').textContent=G.legendaryCount;
-updateUI();renderSlots();updateAccountUI();updateRestockUI();checkDailyOnLoad();checkAchievements();
+updateUI();renderSlots();updateAccountUI();updateRestockUI();checkDailyOnLoad();checkAchievements();setupAITimers();
 setTimeout(updateAccountUI,100);
 const _initUser=getCurrentUser();
 if(_initUser){showToast(`Welcome back, ${_initUser.username}! 👋`,3000);const el=document.getElementById('save-status');if(savedAt){const d=new Date(savedAt);const ts=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;if(el){el.textContent='Last: '+ts;el.style.color='var(--hint)';}}}else if(!savedAt){setTimeout(()=>{document.getElementById('account-modal').style.display='flex';},700);}else{showToast('Welcome to Factory RNG! 🏭',2500);if(!localStorage.getItem(TUTORIAL_KEY))setTimeout(openTutorial,800);const el=document.getElementById('save-status');if(savedAt){const d=new Date(savedAt);const ts=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;if(el){el.textContent='Last: '+ts;el.style.color='var(--hint)';}}}
