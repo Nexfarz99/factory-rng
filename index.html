@@ -607,7 +607,7 @@ const RARITY_IDX={common:0,uncommon:1,rare:2,epic:3,legendary:4,mythical:5};
 const DICE_SHOP=[{id:'d_common',name:'Standard Die',icon:'🎲',desc:'Standard roll. No rarity guarantee.',color:'#94a3b8',minRarity:'common',price:8,maxStock:999,restockLabel:'∞',btnColor:'#4a4868',btnText:'Buy'},{id:'d_uncommon',name:'Green Die',icon:'🟢',desc:'Min. Uncommon guaranteed. No Common drops.',color:'#34d399',minRarity:'uncommon',price:40,maxStock:30,restockLabel:'30/day',btnColor:'#065f46',btnText:'Buy'},{id:'d_rare',name:'Blue Die',icon:'🔵',desc:'Min. Rare guaranteed. Great for grinding.',color:'#60a5fa',minRarity:'rare',price:150,maxStock:15,restockLabel:'15/day',btnColor:'#1e40af',btnText:'Buy'},{id:'d_epic',name:'Purple Die',icon:'🟣',desc:'Min. Epic guaranteed. Highly efficient!',color:'#a78bfa',minRarity:'epic',price:600,maxStock:8,restockLabel:'8/day',btnColor:'#4c1d95',btnText:'Buy'},{id:'d_legendary',name:'Golden Die',icon:'🟡',desc:'Min. Legendary guaranteed. Rare & expensive.',color:'#fbbf24',minRarity:'legendary',price:3000,maxStock:3,restockLabel:'3/day',btnColor:'#78350f',btnText:'Buy'},{id:'d_mythical',name:'Prismatic Die',icon:'🌈',desc:'Min. Mythical guaranteed. Extremely exclusive!',color:'#ff6ef7',minRarity:'mythical',price:25000,maxStock:1,restockLabel:'1/day',btnColor:'#701a75',btnText:'Buy'}];
 const UPGRADES=[{id:'slots',name:'Generator Slots',icon:'📦',bg:'rgba(52,211,153,0.15)',maxLv:6,baseCost:50,costMult:3.2,desc:'Add 1 generator machine slot',effect:lv=>`Active slots: ${3+lv}`},{id:'bag',name:'Bag Capacity',icon:'🎒',bg:'rgba(251,146,60,0.15)',maxLv:8,baseCost:25,costMult:2.4,desc:'Add 5 bag capacity',effect:lv=>`Capacity: ${10+lv*5} items`},{id:'luck',name:'RNG Luck',icon:'🍀',bg:'rgba(167,139,250,0.15)',maxLv:6,baseCost:80,costMult:2.8,desc:'Increase rare item chances',effect:lv=>`Luck: ${(1+lv*0.5).toFixed(1)}x`},{id:'speed',name:'Roll Speed',icon:'⚡',bg:'rgba(251,191,36,0.15)',maxLv:5,baseCost:65,costMult:3,desc:'Reduce roll cooldown',effect:lv=>{const cd=[3000,2200,1500,1000,700,400];return`CD: ${(cd[lv]/1000).toFixed(1)}s`;}},{id:'income',name:'Income Multiplier',icon:'💰',bg:'rgba(251,130,36,0.15)',maxLv:7,baseCost:120,costMult:3.5,desc:'Multiply all machine income',effect:lv=>{const m=[1,1.5,2.2,3.2,4.5,6.5,9,13];return`x${m[lv]} income`;}},{id:'roll2',name:'Roll 2x Upgrade',icon:'2️⃣',bg:'rgba(52,211,153,0.15)',maxLv:1,baseCost:2500,costMult:1,desc:'Unlock Roll 2x button (10% discount)',effect:lv=>lv===0?'Not active':'Active — 2x roll costs 18 coins'},{id:'roll3',name:'Roll 3x Upgrade',icon:'3️⃣',bg:'rgba(251,191,36,0.15)',maxLv:1,baseCost:8000,costMult:1,desc:'Unlock Roll 3x button (20% discount)',effect:lv=>lv===0?'Not active':'Active — 3x roll costs 24 coins'},{id:'autoroll',name:'Auto Roll',icon:'🔄',bg:'rgba(96,165,250,0.15)',maxLv:3,baseCost:500,costMult:5,desc:'Auto roll periodically',effect:lv=>lv===0?'Not active':`Every ${[0,8,4,2][lv]}sec`}];
 const PRESTIGE_UPGRADES=[{id:'p_slots2',name:'Mega Slots',icon:'🏗️',bg:'rgba(52,211,153,0.2)',maxLv:5,baseCost:80000,costMult:4,reqPrestige:1,desc:'Add 2 extra generator slots per level',effect:lv=>`Extra slots: +${lv*2}`,apply:()=>{}},{id:'p_luck2',name:'Fortune Boost',icon:'✨',bg:'rgba(167,139,250,0.2)',maxLv:5,baseCost:150000,costMult:4.5,reqPrestige:1,desc:'Further boost rare item luck',effect:lv=>`+${(lv*0.8).toFixed(1)}x extra luck`},{id:'p_income2',name:'Factory Overdrive',icon:'🔥',bg:'rgba(251,100,36,0.2)',maxLv:6,baseCost:250000,costMult:5,reqPrestige:2,desc:'Massive income multiplier on top of base',effect:lv=>{const m=[1,2,4,8,16,32,64];return`x${m[lv]} income bonus`;}},{id:'p_speed2',name:'Turbo Roll',icon:'💨',bg:'rgba(251,191,36,0.2)',maxLv:4,baseCost:200000,costMult:4.5,reqPrestige:2,desc:'Further reduce roll cooldown',effect:lv=>{const cd=[0,600,400,250,100];return lv===0?'Not active':`CD: ${(cd[lv]/1000).toFixed(1)}s`;}},{id:'p_bag2',name:'Infinite Pockets',icon:'🧳',bg:'rgba(251,146,60,0.2)',maxLv:6,baseCost:100000,costMult:3.8,reqPrestige:1,desc:'Add 10 bag capacity per level',effect:lv=>`+${lv*10} extra capacity`},{id:'p_autoroll2',name:'Machine Mind',icon:'🤖',bg:'rgba(96,165,250,0.2)',maxLv:3,baseCost:500000,costMult:6,reqPrestige:3,desc:'Auto roll multiple machines at once',effect:lv=>lv===0?'Not active':`Auto rolls ${[0,2,3,5][lv]}x at once`},{id:'p_roll5',name:'Roll 5x Upgrade',icon:'5️⃣',bg:'rgba(255,110,247,0.15)',maxLv:1,baseCost:750000,costMult:1,reqPrestige:3,desc:'Unlock Roll 5x button (25% discount)',effect:lv=>lv===0?'Not active':'Active — 5x roll costs 38 coins'},{id:'p_luck3',name:'Mythical Magnet',icon:'🌀',bg:'rgba(255,110,247,0.2)',maxLv:4,baseCost:2000000,costMult:6,reqPrestige:4,desc:'Greatly boosts mythical drop chance',effect:lv=>`+${(lv*2).toFixed(0)}x mythical luck`},{id:'p_income3',name:'Cosmic Engine',icon:'🌌',bg:'rgba(251,191,36,0.2)',maxLv:5,baseCost:5000000,costMult:7,reqPrestige:5,desc:'Exponential income boost for all machines',effect:lv=>{const m=[1,5,25,125,625,3125];return`x${m[lv]} cosmic multiplier`;}}];
-const FAKE_LB=[{name:'RngMaster99',score:1204800,prestige:5},{name:'FactoryKing',score:741200,prestige:3},{name:'MegaGrinder',score:523000,prestige:2},{name:'LuckyStrike_ID',score:310500,prestige:1},{name:'CafeIdle',score:187300,prestige:1},{name:'GoblinHunter',score:92400,prestige:0}];
+// No fake leaderboard — real players only
 let G={coins:30,totalCoins:0,prestigeLevel:0,prestigeBonus:0,upgradeLevels:{slots:0,bag:0,luck:0,speed:0,income:0,roll2:0,roll3:0,autoroll:0},prestigeUpgradeLevels:{},machines:[],bag:[],totalRolls:0,legendaryCount:0,bestRarity:null,cooldown:false,autorollTimer:null,selectedItem:null,invFilter:'all',shopStock:{},lastDailyDate:null,dailyStreak:0,achievements:{},allTimeCoins:0,allTimeRolls:0,allTimeLegendary:0,allTimeMythical:0,allTimePrestige:0};
 function initShopStockRNG(){const RESTOCK_CONFIG_INIT={d_common:{minStock:5,maxStock:20,appearChance:1.0},d_uncommon:{minStock:0,maxStock:12,appearChance:0.85},d_rare:{minStock:0,maxStock:8,appearChance:0.75},d_epic:{minStock:0,maxStock:5,appearChance:0.60},d_legendary:{minStock:0,maxStock:3,appearChance:0.40},d_mythical:{minStock:0,maxStock:2,appearChance:0.15}};DICE_SHOP.forEach(d=>{const cfg=RESTOCK_CONFIG_INIT[d.id];if(!cfg){G.shopStock[d.id]=d.maxStock;return;}if(Math.random()>cfg.appearChance)G.shopStock[d.id]=0;else G.shopStock[d.id]=Math.floor(Math.random()*(cfg.maxStock-cfg.minStock+1))+cfg.minStock;});}
 function fmt(n){n=Math.floor(n);if(n>=1e9)return(n/1e9).toFixed(2)+'M';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toLocaleString('en-US');}
@@ -652,39 +652,62 @@ function buyDice(id){const d=DICE_SHOP.find(x=>x.id===id);if(!d)return;if(G.shop
 /* ===== LEADERBOARD ===== */
 async function renderLeaderboard(){
   const list=document.getElementById('lb-list');
+  const user=getCurrentUser();
+
+  // Show loading
   list.innerHTML=`<div style="text-align:center;padding:30px 0;color:var(--hint);font-size:13px">⏳ Loading leaderboard...</div>`;
 
-  const user=getCurrentUser();
+  // Must be logged in to push score
+  if(user && window._fbUser && window._fbUser.idToken){
+    // Push current user score first so it's up to date
+    try{ await pushLeaderboardScore(); }catch(e){}
+  }
+
   let rows=[];
+  let fetchError=false;
   try{
     const token=window._fbUser?window._fbUser.idToken:null;
     rows=await fbLoadLeaderboard(token);
   }catch(e){
     console.warn('Leaderboard fetch failed:',e);
-    // fallback: show only current user
-    rows=[];
+    fetchError=true;
   }
 
-  // Inject current user if logged in and not already in list
+  list.innerHTML='';
+
+  // Error state
+  if(fetchError){
+    list.innerHTML=`<div style="text-align:center;padding:30px 0;color:var(--red);font-size:13px">
+      ❌ Gagal memuat leaderboard.<br>
+      <span style="color:var(--hint);font-size:11px;margin-top:6px;display:block">Cek koneksi internet atau Firestore rules kamu.</span>
+      <button onclick="renderLeaderboard()" style="margin-top:10px;padding:6px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">🔄 Coba lagi</button>
+    </div>`;
+    return;
+  }
+
+  // Mark current user
   if(user){
-    const myScore=Math.floor(G.allTimeCoins);
-    const exists=rows.find(r=>r.username===user.username);
-    if(!exists) rows.push({username:user.username,score:myScore,prestige:G.prestigeLevel,you:true});
-    else exists.you=true;
+    const me=rows.find(r=>r.username===user.username);
+    if(me) me.you=true;
   }
 
   // Sort descending
   rows.sort((a,b)=>b.score-a.score);
 
-  list.innerHTML='';
+  // Empty state
   if(rows.length===0){
-    list.innerHTML=`<div style="text-align:center;padding:30px 0;color:var(--hint);font-size:13px">No players yet. Be the first!</div>`;
+    list.innerHTML=`<div style="text-align:center;padding:36px 0;color:var(--hint);font-size:13px">
+      <div style="font-size:32px;margin-bottom:10px">🏆</div>
+      <div style="font-weight:700;margin-bottom:6px">Belum ada pemain di leaderboard</div>
+      <div style="font-size:12px">${user?'Kamu akan muncul setelah save game!':'Login terlebih dahulu untuk muncul di sini.'}</div>
+      ${!user?`<button onclick="openAccountModal()" style="margin-top:12px;padding:8px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;">👤 Login</button>`:''}
+    </div>`;
     return;
   }
 
   rows.forEach((r,i)=>{
     const div=document.createElement('div');
-    const isYou=r.you||(user&&r.username===user.username);
+    const isYou=!!r.you;
     div.className='lb-row'+(isYou?' you':'');
     const medals=['🥇','🥈','🥉'];
     const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'';
@@ -696,16 +719,18 @@ async function renderLeaderboard(){
     list.appendChild(div);
   });
 
-  // If logged in, show rank info
-  if(user){
-    const myIdx=rows.findIndex(r=>r.you||(r.username===user.username));
-    if(myIdx>=0){
-      const rankEl=document.createElement('div');
-      rankEl.style.cssText='text-align:center;padding:10px 0 4px;font-size:12px;color:var(--hint);';
-      rankEl.textContent=`Your rank: #${myIdx+1} of ${rows.length} players`;
-      list.appendChild(rankEl);
-    }
+  // Show rank info
+  const myIdx=rows.findIndex(r=>r.you);
+  const footer=document.createElement('div');
+  footer.style.cssText='text-align:center;padding:10px 0 4px;font-size:11px;color:var(--hint);';
+  if(myIdx>=0){
+    footer.textContent=`Peringkat kamu: #${myIdx+1} dari ${rows.length} pemain`;
+  } else if(!user){
+    footer.innerHTML=`<button onclick="openAccountModal()" style="padding:6px 16px;border-radius:8px;border:1px solid rgba(167,139,250,0.3);background:transparent;color:var(--accent);font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;">👤 Login untuk muncul di sini</button>`;
+  } else {
+    footer.textContent=`${rows.length} pemain terdaftar • Skor kamu belum muncul, coba Save dulu`;
   }
+  list.appendChild(footer);
 }
 
 function getPrestigeReq(){return Math.floor(10000*Math.pow(5,G.prestigeLevel));}
