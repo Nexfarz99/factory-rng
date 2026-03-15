@@ -587,7 +587,7 @@ if(window._fbUser){fbRefreshToken(window._fbUser.refreshToken).then(d=>{window._
 
   <div class="page" id="page-ai">
     <!-- Companion display -->
-    <div id="ai-companion-bar" style="display:none;background:var(--card);border:1px solid rgba(167,139,250,0.3);border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;">
+    <div id="ai-companion-bar" style="display:none;background:var(--card);border:1px solid rgba(167,139,250,0.3);border-radius:16px;padding:14px 16px;margin-bottom:12px;align-items:center;gap:14px;">
       <div id="ai-comp-icon" style="font-size:38px;line-height:1;"></div>
       <div style="flex:1">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
@@ -630,7 +630,7 @@ if(window._fbUser){fbRefreshToken(window._fbUser.refreshToken).then(d=>{window._
   </div>
 
   <!-- AI PUZZLE MODAL -->
-  <div id="ai-puzzle-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:800;display:none;align-items:center;justify-content:center;padding:16px;">
+  <div id="ai-puzzle-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:800;display:none;align-items:center;justify-content:center;padding:16px;">
     <div style="background:#1e1c2e;border:1px solid rgba(167,139,250,0.3);border-radius:20px;width:100%;max-width:480px;overflow:hidden;">
       <!-- Progress bar -->
       <div style="height:4px;background:var(--bg3);"><div id="puzzle-prog-fill" style="height:4px;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%;transition:width 0.4s;"></div></div>
@@ -1321,7 +1321,7 @@ function renderAIPage(){
   if(bar){
     if(G.activeAI){
       const ai = AI_DEFS[G.activeAI];
-      bar.style.display='flex';
+      bar.style.cssText=bar.style.cssText;bar.style.display='flex';
       document.getElementById('ai-comp-icon').textContent=ai.icon;
       document.getElementById('ai-comp-name').textContent=ai.name;
       document.getElementById('ai-comp-perks').textContent=ai.perks.join(' • ');
